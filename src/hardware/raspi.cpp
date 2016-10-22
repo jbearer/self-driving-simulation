@@ -29,6 +29,8 @@ struct raspi_impl
 
     void pin_mode(int pin, pin_mode_t fn)
     {
+        diag.info("Set pin {} to mode {}.", pin, fn);
+
         int reg = pin / 10;                             // determines which register, 0-5
         int offset = (pin % 10) * 3;                    // determines offset, 0-9
         GPFSEL[reg] &= ~( (0b111 & fn) << offset);      // clear bits
@@ -37,6 +39,8 @@ struct raspi_impl
 
     void digital_write(int pin, digital_val_t value)
     {
+        diag.trace("Write {} to pin {}.", value, pin);
+
         int reg = pin / 32;                             // determines i for GPSET[i] and GPCLR[i]
         int offset = pin % 32;                          // determines offset in GPSET[i]/GPCLR[i]
 

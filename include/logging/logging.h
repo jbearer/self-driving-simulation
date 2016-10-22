@@ -4,11 +4,19 @@
 #include <memory>
 #include <string>
 
+#include "spdlog/common.h"
 #include "spdlog/spdlog.h"
 
 namespace logging
 {
+    typedef spdlog::level::level_enum log_level;
+
     const spdlog::filename_t LOG_FILE = "logs/main.log";
+
+    inline void set_level(log_level level)
+    {
+        spdlog::set_level(level);
+    }
 
     /**
      * @brief      Logging mechanism. Every file should have one logger, declared like so:

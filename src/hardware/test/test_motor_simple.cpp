@@ -12,6 +12,8 @@ static logging::logger diag("test/motor.simple");
 
 int main()
 {
+    logging::set_level(logging::log_level::trace);
+
     diag.info("Initializing motor");
     auto factory = objects::get<motor_factory>();
     auto motor = factory->create(0);
