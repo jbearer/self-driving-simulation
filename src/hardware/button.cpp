@@ -26,7 +26,9 @@ struct button_impl
     explicit button_impl(int pin_)
         : pi( objects::get<raspi>() )
         , pin(pin_)
-    {}
+    {
+        pi->pin_mode(pin, raspi::INPUT);
+    }
 
     bool is_pushed() const
     {

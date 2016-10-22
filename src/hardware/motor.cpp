@@ -44,6 +44,7 @@ struct motor_impl
         , velocity_offset( velocity() )
     {
         lock_guard<mutex> lock(init_lock);
+        pi->pin_mode(pin, raspi::OUTPUT);
         initialized = true;
         init.notify_all();
     }
