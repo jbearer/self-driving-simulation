@@ -125,18 +125,23 @@ private:
 
     void pwm()
     {
+        double curr = 0;
+        double next = delay;
+
         while( !stopped() ) {
             pi->digital_write(pin, raspi::HIGH);
-            sleep(delay / 2);
+            sleep(delay);
             pi->digital_write(pin, raspi::LOW);
-            sleep(delay / 2);
+            sleep(delay);
 
             {
                 // Update delay so that we accelerate
                 lock_guard<mutex> lock(data_lock);
                 double v_0 = (velocity_offset / RADIUS) * 60 / (2 * PI);
                 double a   = (accel / RADIUS) * 60 / (2 * PI); // Linear to angular
-                delay = 4688.0 / (a * 1e-6 * delay + v_0);
+                curr = next;
+                next = 4688.0 / (a * 1e-6 * curr + v_0);
+                delay = next - curr;
 
                 pos += RADIANS_PER_TURN * RADIUS;
 
