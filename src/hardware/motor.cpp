@@ -32,24 +32,19 @@ static unordered_map<int, int> pins = {
 
 struct motor_impl
     : motor
-    , thread
 {
     explicit motor_impl(int pin_)
-        : thread( bind(&motor_impl::begin, this) )
-        , pi( objects::get<raspi>() )
+        : pi( objects::get<raspi>() )
         , pin(pin_)
         , delay(STOP_THRESHOLD + 1)     // This ensures we are stopped at first
         , accel(0.0)
         , pos(0.0)
         , velocity_offset( velocity() )
+        , halt(false)
     {
-        lock_guard<mutex> lock(init_lock);
-
         diag.info("Initializing motor at pin {}.", pin);
-
         pi->pin_mode(pin, raspi::OUTPUT);
-        initialized = true;
-        init.notify_all();
+        motor_thread = thread( bind(&motor_impl::idle, this) );
     }
 
     ~motor_impl()
@@ -59,7 +54,7 @@ struct motor_impl
             lock_guard<mutex> lock(data_lock);
             halt = true;
         }
-        join();
+        motor_thread.join();
     }
 
     void set_acceleration(double acceleration_)
@@ -108,30 +103,21 @@ struct motor_impl
     }
 
 private:
-    // Since thread gets initialized before our member variables, we wait for initialization finish
-    // before beginning the real work
-    void begin()
-    {
-        diag.trace("Waiting for initialization.");
-        unique_lock<mutex> l(init_lock);
-        init.wait(l, [this]() { return initialized; });
-
-        diag.trace("Initialization complete, proceeding to idle state.");
-        idle();
-    }
 
     // Sit still and wait for an acceleration
     void idle()
     {
-        unique_lock<mutex> l(data_lock);
+        {
+            unique_lock<mutex> l(data_lock);
 
-        if (halt) {
-            diag.info("Halt requested, exiting.");
-            return;
+            if (halt) {
+                diag.info("Halt requested, exiting.");
+                return;
+            }
+
+            diag.trace("Idling, waiting for acceleration.");
+            start.wait(l, [this]() { return !stopped(); });
         }
-
-        diag.trace("Idling, waiting for acceleration.");
-        start.wait(l, [this]() { return !stopped(); });
 
         diag.trace("Acceleration detected, beginning pulse wave modulation.");
         pwm();
@@ -195,10 +181,9 @@ private:
     // Synchronization
     mutable mutex       data_lock;      // Protects the kinematics data
     condition_variable  start;          // Used to signal that we have started moving
-    mutex               init_lock;      // Used with init signal variable
-    condition_variable  init;           // Used to signal the thread to start after initialization
-    bool                initialized = false;
-    bool                halt = false;
+
+    bool                halt;
+    thread              motor_thread;
 
     // The radius of the wheel in meters. Used to convert between angular and linear units.
     static constexpr double RADIUS = 0.075;
