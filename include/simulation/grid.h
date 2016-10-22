@@ -17,7 +17,7 @@ public:
 	static const size_t NUM_AUTOS = 5;
 
 	Grid(std::vector<Intersection*> intersections, std::vector<Auto*> autos,
-		Human* human);
+		Human* human, double width, double height);
 
 	/**
 	 * @brief      Given a grid, find the accelerations of the five cars
@@ -58,5 +58,8 @@ private:
 	std::vector<Intersection*> intersections_;
 	std::vector<Auto*> autos_;
 	Human* human_;
+
+	double width_;
+	double length_;
 };
 

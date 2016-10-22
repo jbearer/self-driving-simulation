@@ -37,6 +37,7 @@ double Auto::optimal_acc(const Intersection& i, double time, double pos, double 
 	else {
 		if (i.window_ == NULL)
 			diag.error("Window should not be null.  Collision should have returned false");
+
 		// there will be exactly one window in the intersection.
 		// find when it's clear, and adjust acceleration for that time
 		double cleared_time = i.window_->second;
@@ -51,12 +52,12 @@ double Auto::optimal_acc(const Intersection& i, double time, double pos, double 
 }
 
 Intersection::Window Car::create_window(
-	double curr_time, double disp, double curr_vel, double acc, double intsctn_wd) const
+	double disp, double curr_vel, double acc, double intsctn_wd) const
 {
 	double min_time = calculate_time(disp, curr_vel, acc);
 	double max_time = calculate_time(disp + length_ + intsctn_wd, curr_vel, acc);
 
-	return Intersection::Window(curr_time + min_time, curr_time + max_time);
+	return Intersection::Window(min_time, max_time);
 }
 
 bool Auto::collision(const Intersection& i, double time, double pos, double vel, double acc) const
@@ -67,9 +68,9 @@ bool Auto::collision(const Intersection& i, double time, double pos, double vel,
 	}
 
 	// calculate time to enter
-	double displacement = pos_of_intersection(i) - pos;
-	double time_till_enter = calculate_time(displacement, vel, acc); //acc might drop!
-	double time_till_exit = calculate_time(displacement + length_, vel, acc);
+	double disp = pos_of_intersection(i) - pos;
+	double time_till_enter = calculate_time(disp, vel, acc); //acc might drop!
+	double time_till_exit = calculate_time(disp + length_ + i.across_wd_, vel, acc);
 
 	if (time_till_enter > time_till_exit)
 		diag.error("exit time was less than entrance time");
@@ -109,10 +110,14 @@ double Car::wd_of_intersection(const Intersection& i) const
 	}
 }
 
-// TODO!!!
-double Auto::final_acc() const
+double Auto::final_acc(double max) const
 {
-	return -1;
+	if (position() > max) {
+		return 0;
+	}
+	else {
+		return (pow(velocity(), 2) - pow(TURN_VEL, 2)) / (2*(max - position()));
+	}
 }
 
 ///////////// CALCULATING VALUES WITH KINETMATICS //////////////////
@@ -131,10 +136,14 @@ double Car::calculate_acc(double delta_x, double v_init, double time)
 {
 	double acc = calculate_acc_raw(delta_x, v_init, time);
 	// acceleration shouldn't never be less than min
-	if (acc < MIN_ACC)
+	if (acc < MIN_ACC) {
+		diag.warn("acceleration was below minimum! Trying to decelerate too fast");
 		return MIN_ACC;
-	else if (acc > MAX_ACC)
+	}
+	else if (acc > MAX_ACC) {
+		diag.warn("acceleration was above max! Trying to accelerate too fast");
 		return MAX_ACC;
+	}
 	else
 		return acc;
 	}
@@ -230,4 +239,19 @@ double Car::velocity() const
 int Car::track_id() const
 {
 	return track_id_;
+}
+
+double Car::length() const
+{
+	return length_;
+}
+
+bool Car::horiz() const
+{
+	return track_id_ < 3;
+}
+
+bool Car::vert() const
+{
+	return !horiz();
 }

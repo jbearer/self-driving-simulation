@@ -7,8 +7,9 @@ using namespace logging;
 static logger diag("grid");
 
 Grid::Grid(std::vector<Intersection*> intersections, std::vector<Auto*> autos,
-	Human* human):
-	intersections_{intersections}, autos_{autos}, human_{human}
+	Human* human, double width, double length):
+	intersections_{intersections}, autos_{autos}, human_{human},
+	width_{width}, length_{length}
 {
 	// nothing to do
 }
@@ -57,6 +58,7 @@ double Grid::set_min_windows(const Auto& auto_car)
 		// find the optimal acceleration for each car
 		double acc = auto_car.optimal_acc(*i, time, pos, vel);
 		if (!acc_set) {
+			acc_set = true;
 			acc_to_return = acc;
 		}
 		// determine fill the window with how long it takes to get to the
@@ -64,22 +66,23 @@ double Grid::set_min_windows(const Auto& auto_car)
 		double disp = auto_car.pos_of_intersection(*i) - pos;
 		double wd_of_intsctn = auto_car.wd_of_intersection(*i);
 		Intersection::Window w =
-			auto_car.create_window(time, disp, vel, acc, wd_of_intsctn);
+			auto_car.create_window(disp, vel, acc, wd_of_intsctn);
 
 		// no need to overwrite an existing window, since there are only two
 		// cars per interseection
 		if (i->window_ == nullptr)
-			i->set_window(w);
+			i->set_window(Intersection::Window(w.first + time, w.second + time));
 
 		// update the current time and position
 		time += w.second;
-		pos += auto_car.calculate_pos(vel, acc, time);
-		vel += auto_car.calculate_vel(pos, acc, time);
-
+		//pos += auto_car.calculate_pos(vel, acc, w.second);
+		vel += auto_car.calculate_vel(pos, acc, w.second);
+		pos += disp + auto_car.length() + wd_of_intsctn;
 	}
 
 	if (!acc_set) {
-		acc_to_return = auto_car.final_acc();
+		double span = auto_car.horiz() ? width_ : length_;
+		acc_to_return = auto_car.final_acc(span);
 	}
 
 	return acc_to_return;

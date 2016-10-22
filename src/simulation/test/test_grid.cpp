@@ -2,6 +2,11 @@
 
 int main()
 {
+	objects::mock<motor_factory>();
+
+	double board_width = .6;
+	double board_height = .9;
+
 	double wd = .02225;
 	// distance leftmost to first track
 	double start_across = .1;
@@ -55,8 +60,21 @@ int main()
 		&left_car, &mid_down_car, &right_car
 	};
 
-	Grid myGrid(intersections, autos, &human);
-	myGrid.find_accelerations();
+	double max_sum = 0;
+	std::vector<double> max_acc_s;
 
+	do {
+		Grid myGrid(intersections, autos, &human, board_width, board_height);
+		std::vector<double> acc_s = myGrid.find_accelerations();
+		double sum = std::accumulate(acc_s.begin(), acc_s.end(), 0);
+		if (sum > max_sum) {
+			max_sum = sum;
+			max_acc_s = acc_s;
+		}
+	} while (std::next_permutation(intersections.begin(), intersections.end()));
+
+	// max_acc_s is bound to the highest sum of accelerations;
+
+	return 0;
 }
 

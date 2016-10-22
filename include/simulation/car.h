@@ -15,6 +15,7 @@ public:
 	static constexpr double MAX_VEL = .5;
 	static constexpr double MAX_ACC = 3;
 	static constexpr double MIN_ACC = -3;
+	static constexpr double TURN_VEL = .3;
 
 	Car(int track_id, int length);
 
@@ -66,7 +67,7 @@ public:
 	 */
 	//virtual window min_window(Intersection i, double curr_time, double curr_pos);
 
-	Intersection::Window create_window(double time, double disp, double vel, double acc, double intsctn_wd) const;
+	Intersection::Window create_window(double disp, double vel, double acc, double intsctn_wd) const;
 
 	/**
 	 * @brief      Returns the position of an intersection along the track
@@ -88,6 +89,16 @@ public:
 	 */
 	double wd_of_intersection(const Intersection& i) const;
 
+	/**
+	 * @brief      Calculates the position, given a starting velocity and acceleration
+	 *             over a specific time window
+	 *
+	 * @param[in]  vel   The velocity
+	 * @param[in]  acc   The acc
+	 * @param[in]  time  The time
+	 *
+	 * @return     The position.
+	 */
 	static double calculate_pos(double vel, double acc, double time);	//DONE
 	static double calculate_vel(double vel, double acc, double time);	//DONE
 	static double calculate_acc(double pos, double vel, double time); //DONE
@@ -99,6 +110,10 @@ public:
 	double position() const;
 	double velocity() const;
 	int track_id() const;
+	double length() const;
+
+	bool horiz() const;
+	bool vert() const;
 
 protected:
 
@@ -161,7 +176,7 @@ public:
 	static bool intervals_overlap(double a_1, double a_2, double b_1, double b_2);
 
 	/// set the final acceleration when rounding the corner
-	double final_acc() const;
+	double final_acc(double span) const;
 
 private:
 
