@@ -23,5 +23,12 @@ test_objects: test_objects.o objects
 test_objects.o: src/objects/test/test_objects.cpp include/objects/objects.h
 	$(CXX) $(CXX_FLAGS) $<
 
+####################################################################################################
+# HARDWARE OBJECTS
+####################################################################################################
+
 motor.o: src/hardware/motor.cpp include/hardware/motor.h logging
+	$(CXX) $(CXX_FLAGS) $<
+
+sensor.o: src/hardware/sensor.cpp include/hardware/sensor.h logging
 	$(CXX) $(CXX_FLAGS) $<
