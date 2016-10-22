@@ -141,9 +141,9 @@ private:
     {
         while( !stopped() ) {
             pi->digital_write(pin, raspi::HIGH);
-            if ( usleep(delay) < 0)
-                diag.error("usleep: {}", strerror(errno));
+            sleep(delay / 2);
             pi->digital_write(pin, raspi::LOW);
+            sleep(delay / 2);
 
             {
                 // Update delay so that we accelerate
@@ -174,6 +174,12 @@ private:
     double lockless_velocity() const
     {
         return stopped() ? 0.0 : (1e6 / delay) * RADIANS_PER_TURN * RADIUS;
+    }
+
+    void sleep(double us) const
+    {
+        if ( usleep(us) < 0)
+            diag.error("usleep: {}", strerror(errno));
     }
 
     // Hardware
