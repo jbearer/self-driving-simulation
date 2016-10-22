@@ -148,6 +148,7 @@ private:
                 lock_guard<mutex> lock(data_lock);
 
                 double v_0 = (velocity_offset / RADIUS) * 60 / (2 * PI);
+                diag.info("v_0 = {}", v_0);
                 double a   = (accel / RADIUS) * 60 / (2 * PI); // Linear to angular
                 curr = next;
                 next = 4688.0 / (a * 1e-6 * curr + v_0) + curr;
