@@ -40,7 +40,7 @@ int main()
     diag.info("Accelerating motor 0 slowly and motor 1 quickly.");
     motors[0]->set_acceleration(0.1);
     motors[1]->set_acceleration(1);
-    usleep(2e6);
+    usleep(5e6);
 
     diag.info("Stopping.");
 
