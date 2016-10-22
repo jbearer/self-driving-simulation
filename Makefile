@@ -39,6 +39,21 @@ raspi.o: src/hardware/raspi.cpp include/hardware/raspi.h $(OBJECTS_HEADERS) $(LO
 	$(CXX) $(CXX_FLAGS) $<
 
 ####################################################################################################
+# SIMULATION OBJECTS
+####################################################################################################
+
+
+car.o: src/simulation/car.cpp include/simulation/car.h $(LOGGING_HEADERS)
+	$(CXX) $(CXX_FLAGS) $<
+
+grid.o: src/simulation/grid.cpp include/simulation/grid.h $(LOGGING_HEADERS)
+	$(CXX) $(CXX_FLAGS) $<
+
+intersection.o: src/simulation/intersection.cpp include/simulation/intersection.h $(LOGGING_HEADERS)
+	$(CXX) $(CXX_FLAGS) $<
+
+
+####################################################################################################
 # EXECUTABLES
 ####################################################################################################
 
@@ -52,13 +67,4 @@ test_motor: test_motor.o motor.o objects.o
 	$(CXX) -o $@ motor.o objects.o test_motor.o $(LINK_FLAGS)
 
 test_motor.o: src/hardware/test/test_motor.cpp include/hardware/motor.h $(OBJECTS_HEADERS) $(LOGGING_HEADERS)
-	$(CXX) $(CXX_FLAGS) $<
-
-car.o: src/simulation/car.cpp include/simulation/car.h logging
-	$(CXX) $(CXX_FLAGS) $<
-
-grid.o: src/simulation/grid.cpp include/simulation/grid.h logging
-	$(CXX) $(CXX_FLAGS) $<
-
-intersection.o: src/simulation/intersection.cpp include/simulation/intersection.h logging
 	$(CXX) $(CXX_FLAGS) $<
