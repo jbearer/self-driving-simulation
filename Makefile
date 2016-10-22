@@ -35,3 +35,9 @@ sensor.o: src/hardware/sensor.cpp include/hardware/sensor.h logging
 
 button.o: src/hardware/button.cpp include/hardware/button.h logging
 	$(CXX) $(CXX_FLAGS) $<
+
+car.o: src/simulation/car.cpp include/simulation/car.h logging
+	$(CXX) $(CXX_FLAGS) $<
+
+#grid.o: src/simulation/grid.cpp include/simulation/grid.h logging
+#	$(CXX) $(CXX_FLAGS) $<
