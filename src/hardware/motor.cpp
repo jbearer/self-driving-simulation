@@ -150,7 +150,7 @@ private:
                 lock_guard<mutex> lock(data_lock);
                 double v_0 = velocity_offset;
                 double a   = (accel / RADIUS) * 60 / (2 * PI); // Linear to angular
-                delay = 150000.0 / (a * 1e-6 + v_0);
+                delay = 4688.0 / (a * 1e-6 * delay + v_0);
 
                 pos += RADIANS_PER_TURN * RADIUS;
 
@@ -206,7 +206,7 @@ private:
     static constexpr double RADIANS_PER_TURN = PI / 100;
 
     // If delay is longer than this, the motor is considered to be stopped.
-    static constexpr double STOP_THRESHOLD = 10000;
+    static constexpr double STOP_THRESHOLD = 4000;
 };
 
 struct mock_motor
