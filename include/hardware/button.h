@@ -16,6 +16,6 @@ namespace hardware
     struct button_factory
         : objects::object
     {
-        virtual std::unique_ptr<button> create(int track_id);
+        virtual std::unique_ptr<button> create(int track_id) = 0;
     };
 }

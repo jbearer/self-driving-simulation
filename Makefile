@@ -3,7 +3,7 @@ INCLUDE = -Iinclude/ -Itpc/logging/include
 CXX_FLAGS = -c -g -std=c++14 -Wall -Wextra -pedantic -Werror $(INCLUDE)
 LINK_FLAGS = -lpthread
 
-TARGETS = test_objects test_motor
+TARGETS = test_objects test_motor test_button
 
 LOGGING_HEADERS = include/logging/logging.h tpc/logging/include/spdlog/spdlog.h
 
@@ -67,4 +67,10 @@ test_motor: test_motor.o motor.o objects.o raspi.o
 	$(CXX) -o $@ $^ $(LINK_FLAGS)
 
 test_motor.o: src/hardware/test/test_motor.cpp include/hardware/motor.h $(OBJECTS_HEADERS) $(LOGGING_HEADERS)
+	$(CXX) $(CXX_FLAGS) $<
+
+test_button: test_button.o button.o objects.o raspi.o
+	$(CXX) -o $@ $^ $(LINK_FLAGS)
+
+test_button.o: src/hardware/test/test_button.cpp include/hardware/button.h $(OBJECTS_HEADERS) $(LOGGING_HEADERS)
 	$(CXX) $(CXX_FLAGS) $<

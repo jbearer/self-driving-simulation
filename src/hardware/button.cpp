@@ -30,11 +30,11 @@ struct button_impl
 
     bool is_pushed() const
     {
-        return pi.digital_read(pin) == raspi::HIGH;
+        return pi->digital_read(pin) == raspi::HIGH;
     }
 
 private:
-    unique_ptr<raspi>   pi;
+    shared_ptr<raspi>   pi;
     int                 pin;
 };
 
