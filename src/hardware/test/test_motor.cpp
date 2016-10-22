@@ -15,8 +15,6 @@ static logging::logger diag("test/motor");
 
 int main()
 {
-    objects::mock<motor_factory>();
-
     diag.info("Initializing motors");
     vector<int> tracks(6);
     vector<unique_ptr<motor>> motors(6);
