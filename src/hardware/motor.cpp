@@ -22,12 +22,12 @@ static logging::logger diag("hardware/motor");
 
 // Mapping from track_id_s to pins
 static unordered_map<int, int> pins = {
-    {0, 0},
-    {1, 1},
-    {2, 2},
-    {3, 3},
-    {4, 4},
-    {5, 5}
+    {0, 18},
+    {1, 23},
+    {2, 4},
+    {3, 5},
+    {4, 6},
+    {5, 12}
 };
 
 struct motor_impl

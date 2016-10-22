@@ -31,7 +31,7 @@ int main()
     motors[0]->set_acceleration(0.2);
     usleep(2e6);
     diag.info("Decelerating motor 0.");
-    motors[0]->change_acceleration(-0.2);
+    motors[0]->change_acceleration(-0.4);
     usleep(2e6);
 
     diag.info("Sleeping for 2 seconds with motors once again idle.");
