@@ -54,6 +54,7 @@ struct motor_impl
         {
             lock_guard<mutex> lock(data_lock);
             halt = true;
+            start.notify_all();
         }
         motor_thread.join();
     }
@@ -147,7 +148,7 @@ private:
             {
                 lock_guard<mutex> lock(data_lock);
 
-                double v_0 = (velocity_offset / RADIUS) * 60 / (2 * PI);
+                double v_0 = 2 * (velocity_offset / RADIUS) * 60 / (2 * PI);
                 diag.info("v_0 = {}", v_0);
                 double a   = (accel / RADIUS) * 60 / (2 * PI); // Linear to angular
                 curr = next;
