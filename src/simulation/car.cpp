@@ -4,12 +4,20 @@
 #include "simulation/car.h"
 #include "simulation/intersection.h"
 #include "logging/logging.h"
+#include "objects/objects.h"
 
 using namespace logging;
 
 static logger diag("car");
 
-float Auto::optimal_acc(const Intersection& i, float time, float pos, float vel)
+Car::Car(int track_id, int length):
+	track_id_(track_id), length_(length)
+{
+	auto factory = objects::get<motor_factory>();
+	motor_ = factory->create(track_id);
+}
+
+double Auto::optimal_acc(const Intersection& i, double time, double pos, double vel) const
 {
 	// if the car can go through at its maximal acceleration, then it should
 	if (!collision(i, time, pos, vel, MAX_ACC)) {
@@ -17,63 +25,94 @@ float Auto::optimal_acc(const Intersection& i, float time, float pos, float vel)
 	}
 
 	else {
-		if (i.window == NULL)
+		if (i.window_ == NULL)
 			diag.error("Window should not be null.  Collision should have returned false");
 		// there will be exactly one window in the intersection.
 		// find when it's clear, and adjust acceleration for that time
-		float cleared_time = i.window->second;
+		double cleared_time = i.window_->second;
 
-		float time_to_interesction = cleared_time - time;
+		double time_to_interesction = cleared_time - time;
 		if (time_to_interesction < 0)
 			diag.error("time to intersection must be positive");
 
-		float dist = position_of_intersection(i) - pos;
+		double dist = pos_of_intersection(i) - pos;
 		return calculate_acc(dist, vel, time_to_interesction);
 	}
 }
 
+Intersection::Window Car::create_window(
+	double curr_time, double disp, double curr_vel, double acc, double intsctn_wd) const
+{
+	double min_time = calculate_time(disp, curr_vel, acc);
+	double max_time = calculate_time(disp + length_ + intsctn_wd, curr_vel, acc);
 
-bool Auto::collision(const Intersection& i, float time, float pos, float vel, float acc)
+	return Intersection::Window(curr_time + min_time, curr_time + max_time);
+}
+
+bool Auto::collision(const Intersection& i, double time, double pos, double vel, double acc) const
 {
 	// There will be no collision if no one has registered a time
-	if (i.window == NULL) {
+	if (i.window_ == NULL) {
 		return false;
 	}
 
 	// calculate time to enter
-	float displacement = position_of_intersection(i) - pos;
-	float time_till_enter = calculate_time(displacement, vel, acc); //acc might drop!
-	float time_till_exit = calculate_time(displacement + length_, vel, acc);
+	double displacement = pos_of_intersection(i) - pos;
+	double time_till_enter = calculate_time(displacement, vel, acc); //acc might drop!
+	double time_till_exit = calculate_time(displacement + length_, vel, acc);
 
 	if (time_till_enter > time_till_exit)
 		diag.error("exit time was less than entrance time");
 
 	return intervals_overlap(time_till_enter + time,
 							 time_till_exit + time,
-							 i.window->first,
-							 i.window->second);
+							 i.window_->first,
+							 i.window_->second);
 }
 
-bool Auto::intervals_overlap(float a_first, float a_second, float b_first, float b_second)
+bool Auto::intervals_overlap(double a_first, double a_second, double b_first, double b_second)
 {
 	return !((a_second < b_first) || (a_first > b_second));
 }
 
+double Car::pos_of_intersection(const Intersection& i) const
+{
+	if (i.across_id_ == track_id_)
+		return i.across_pos_;
+	else if (i.down_id_ == track_id_)
+		return i.down_pos_;
+	else {
+		diag.error("car is not on a track with the intersection");
+		return 0;
+	}
+}
+
+double Car::wd_of_intersection(const Intersection& i) const
+{
+	if (i.across_id_ == track_id_)
+		return i.across_wd_;
+	else if (i.down_id_ == track_id_)
+		return i.down_wd_;
+	else {
+		diag.error("car is not on a track with the intersection");
+		return 0;
+	}
+}
 
 ///////////// CALCULATING VALUES WITH KINETMATICS //////////////////
 
 
-float Car::calculate_vel(float vel, float acc, float time)
+double Car::calculate_vel(double vel, double acc, double time)
 {
-	float v_final = std::min(calculate_vel_raw(vel, acc, time), MAX_VEL);
+	double v_final = std::min(calculate_vel_raw(vel, acc, time), MAX_VEL);
 
 	check_vel(v_final);
 	return v_final;
 }
 
-float Car::calculate_acc(float delta_x, float v_init, float time)
+double Car::calculate_acc(double delta_x, double v_init, double time)
 {
-	float acc = calculate_acc_raw(delta_x, v_init, time);
+	double acc = calculate_acc_raw(delta_x, v_init, time);
 	// acceleration shouldn't never be less than min
 	if (acc < MIN_ACC)
 		return MIN_ACC;
@@ -83,17 +122,17 @@ float Car::calculate_acc(float delta_x, float v_init, float time)
 		return acc;
 	}
 
-float Car::calculate_pos(float v_init, float a_init, float time)
+double Car::calculate_pos(double v_init, double a_init, double time)
 {
 	// if the current acceleration would cause the velocity to exceed
 	// the maximum...
 	if (calculate_vel_raw(v_init, a_init, time) > MAX_VEL) {
 
 		// calculate how long it takes to reach max vel
-		float time_to_max_vel = (MAX_VEL - v_init) / a_init;
+		double time_to_max_vel = (MAX_VEL - v_init) / a_init;
 
 		// calculate the displacement over that period of time
-		float dist_to_max_vel =
+		double dist_to_max_vel =
 			v_init * time_to_max_vel + 0.5 * a_init * pow(time_to_max_vel, 2.0);
 
 		// calculate the remaining distance
@@ -106,34 +145,34 @@ float Car::calculate_pos(float v_init, float a_init, float time)
 	}
 }
 
-float Car::calculate_time(float disp, float v_init, float a_init)
+double Car::calculate_time(double disp, double v_init, double a_init)
 {
-	float v_final = std::sqrt(pow(v_init, 2) + 2 * a_init * disp);
+	double v_final = std::sqrt(pow(v_init, 2) + 2 * a_init * disp);
 	if (v_final <= MAX_VEL) {
 		return calculate_time_raw(disp, v_init, a_init);
 	}
 	else {
 		// calculate time it takes to get to max vel
-		float time_to_max_vel = (MAX_VEL - v_init) / a_init;
+		double time_to_max_vel = (MAX_VEL - v_init) / a_init;
 
-		float dist_to_max_vel =
+		double dist_to_max_vel =
 			v_init * time_to_max_vel + 0.5 * a_init * pow(time_to_max_vel, 2.0);
 
 		return time_to_max_vel + (disp - dist_to_max_vel) / MAX_VEL;
 	}
 }
 
-float Car::calculate_vel_raw(float vel, float acc, float time)
+double Car::calculate_vel_raw(double vel, double acc, double time)
 {
 	return vel + acc * time;
 }
 
-float Car::calculate_acc_raw(float delta_x, float v_init, float time)
+double Car::calculate_acc_raw(double delta_x, double v_init, double time)
 {
 	return 2.0*(delta_x - v_init * time) / (pow(time, 2.0));
 }
 
-float Car::calculate_time_raw(float disp, float v_init, float acc)
+double Car::calculate_time_raw(double disp, double v_init, double acc)
 {
 	if (acc == 0) {
 		return disp / v_init;
@@ -145,7 +184,7 @@ float Car::calculate_time_raw(float disp, float v_init, float acc)
 	}
 }
 
-void Car::check_vel(float vel)
+void Car::check_vel(double vel)
 {
 	if (vel < 0)
 		diag.error("velocity is below 0");
@@ -153,10 +192,25 @@ void Car::check_vel(float vel)
 		diag.error("velocity is above MAX_VEL");
 }
 
-void Car::check_acc(float acc)
+void Car::check_acc(double acc)
 {
 	if (acc < MIN_ACC)
 		diag.error("acceleration is below MIN_ACC");
 	if (acc > MAX_ACC)
 		diag.error("acceleartion is above MAX_ACC");
+}
+
+double Car::position() const
+{
+	return motor_->position();
+}
+
+double Car::velocity() const
+{
+	return motor_->velocity();
+}
+
+int Car::track_id() const
+{
+	return track_id_;
 }

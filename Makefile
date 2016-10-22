@@ -57,5 +57,8 @@ test_motor.o: src/hardware/test/test_motor.cpp include/hardware/motor.h $(OBJECT
 car.o: src/simulation/car.cpp include/simulation/car.h logging
 	$(CXX) $(CXX_FLAGS) $<
 
-#grid.o: src/simulation/grid.cpp include/simulation/grid.h logging
-#	$(CXX) $(CXX_FLAGS) $<
+grid.o: src/simulation/grid.cpp include/simulation/grid.h logging
+	$(CXX) $(CXX_FLAGS) $<
+
+intersection.o: src/simulation/intersection.cpp include/simulation/intersection.h logging
+	$(CXX) $(CXX_FLAGS) $<

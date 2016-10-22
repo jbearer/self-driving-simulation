@@ -11,14 +11,30 @@ using namespace hardware;
  */
 struct Intersection {
 public:
-	typedef std::pair<float, float> Window;
+
+	typedef std::pair<double, double> Window;
+
+	Intersection(int across_id, int down_id);
+
+	Intersection(const Intersection& rhs) = delete;
+
+
 
 	/**
 	 * @brief      Sets a window of time the intersection is occupied
 	 */
-	void set_window();
+	void set_window(Window new_window);
 
-	//motor across_motor_;
-	//motor down_motor_;
-	std::unique_ptr<Window> window = NULL;
+	int across_id_;
+	int down_id_;
+	double across_wd_;
+	double down_wd_;
+
+	// the position of the BEGINNING of the intersection, from the
+	// perspective of the direction of travel
+	double across_pos_;
+	double down_pos_;
+
+
+	std::unique_ptr<Window> window_ = nullptr;
 };

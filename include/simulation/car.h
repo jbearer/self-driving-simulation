@@ -12,9 +12,14 @@
 class Car {
 public:
 
-	static constexpr float MAX_VEL = .5;
-	static constexpr float MAX_ACC = 3;
-	static constexpr float MIN_ACC = -3;
+	static constexpr double MAX_VEL = .5;
+	static constexpr double MAX_ACC = 3;
+	static constexpr double MIN_ACC = -3;
+
+	Car(int track_id, int length);
+
+	Car(const Car& copy) = delete;
+
 	/**
 	 * @brief      Gets the cross intersections.
 	 *
@@ -36,7 +41,7 @@ public:
 	 *
 	 * @return     Time it takes to get there
 	 */
-	//virtual float min_time_to_enter(Intersection i);
+	double min_time_to_enter(const Intersection& i);
 
 	/**
 	 * @brief      Calculates the smallest time that the car will be
@@ -46,7 +51,7 @@ public:
 	 *
 	 * @return     minimum time
 	 */
-	//virtual float min_time_to_exit(Intersection i);
+	//virtual double min_time_to_exit(Intersection i);
 
 	/**
 	 * @brief      Returns the soonest window of time (start and end) that a car
@@ -59,7 +64,9 @@ public:
 	 *
 	 * @return     the minimum window
 	 */
-	//virtual window min_window(Intersection i, float curr_time, float curr_pos);
+	//virtual window min_window(Intersection i, double curr_time, double curr_pos);
+
+	Intersection::Window create_window(double time, double disp, double vel, double acc, double intsctn_wd) const;
 
 	/**
 	 * @brief      Returns the position of an intersection along the track
@@ -69,33 +76,47 @@ public:
 	 *
 	 * @return     the position of the intersection
 	 */
+	double pos_of_intersection(const Intersection& i) const;
 
-	static float calculate_pos(float vel, float acc, float time);	//DONE
-	static float calculate_vel(float vel, float acc, float time);	//DONE
-	static float calculate_acc(float pos, float vel, float time); //DONE
+	/**
+	 * @brief      Returns the width of the intersection in the direction that
+	 *             the car is traveling
+	 *
+	 * @param[in]  i     the intersection
+	 *
+	 * @return     the width
+	 */
+	double wd_of_intersection(const Intersection& i) const;
+
+	static double calculate_pos(double vel, double acc, double time);	//DONE
+	static double calculate_vel(double vel, double acc, double time);	//DONE
+	static double calculate_acc(double pos, double vel, double time); //DONE
 
 	/// time to go a given displacement, given v_init and a_init
-	static float calculate_time(float disp, float v_init, float a_init);
+	static double calculate_time(double disp, double v_init, double a_init);
+
+	/// Getters
+	double position() const;
+	double velocity() const;
+	int track_id() const;
 
 protected:
-	/// return the position of the intersection along the track of the
-	/// current car
-	float position_of_intersection(const Intersection& i);
 
-	//motor motor_;
-	float length_;
+	unique_ptr<motor> motor_;
+	int track_id_;
+	double length_;
 
 private:
 
 	/// raw methods return values possibly outside the constraints
-	static float calculate_vel_raw(float vel, float acc, float time);	//DONE
-	static float calculate_acc_raw(float pos, float vel, float time);	//DONE
-	static float calculate_time_raw(float disp, float v_init, float a_init);
+	static double calculate_vel_raw(double vel, double acc, double time);	//DONE
+	static double calculate_acc_raw(double pos, double vel, double time);	//DONE
+	static double calculate_time_raw(double disp, double v_init, double a_init);
 
 	//// debugging /////
 
-	static void check_vel(float vel);
-	static void check_acc(float acc);
+	static void check_vel(double vel);
+	static void check_acc(double acc);
 
 
 };
@@ -119,7 +140,7 @@ public:
 	 *
 	 * @return     { description_of_the_return_value }
 	 */
-	float optimal_acc(const Intersection& i, float time, float pos, float vel);
+	double optimal_acc(const Intersection& i, double time, double pos, double vel) const;
 
 	/**
 	 * @brief      Returns true if the auto is set on a collision course
@@ -133,12 +154,19 @@ public:
 	 *
 	 * @return     { description_of_the_return_value }
 	 */
-	bool collision(const Intersection& i, float time, float pos, float vel, float acc);
+	bool collision(const Intersection& i, double time, double pos, double vel, double acc) const;
 
 	/// Returns true if the intervals overlap
-	static bool intervals_overlap(float a_1, float a_2, float b_1, float b_2);
+	static bool intervals_overlap(double a_1, double a_2, double b_1, double b_2);
+
+	/// set the final acceleration when rounding the corner
+	double final_acc() const;
 
 private:
 
+
+};
+
+class Human : public Car {
 
 };
