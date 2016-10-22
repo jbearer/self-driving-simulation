@@ -11,7 +11,7 @@
 
 using namespace std;
 
-static logging::logger diag("objects");
+static logging::logger objects_diag("objects");
 
 typedef unordered_map< string, shared_ptr<objects::object> > object_map_t;
 
@@ -36,9 +36,9 @@ objects::object_registration<itf_t, impl_t>::object_registration()
 {
     string name = name_of<itf_t>();
     if ( real_objects.count(name) != 0 )
-        diag.fail("Object {} registered twice.", name);
+        objects_diag.fail("Object {} registered twice.", name);
     if ( !is_base_of<itf_t, impl_t>::value )
-        diag.fail("Interface type {} is not a base class of implementation type {}", name, name_of<impl_t>() );
+        objects_diag.fail("Interface type {} is not a base class of implementation type {}", name, name_of<impl_t>() );
 
     register_object_unchecked<itf_t, impl_t>(real_objects);
 }
@@ -48,9 +48,9 @@ objects::mock_object_registration<itf_t, impl_t>::mock_object_registration()
 {
     string name = name_of<itf_t>();
     if ( mock_objects.count(name) != 0 )
-        diag.fail("Mock object {} registered twice.", name);
+        objects_diag.fail("Mock object {} registered twice.", name);
     if ( !is_base_of<itf_t, impl_t>::value )
-        diag.fail("Interface type {} is not a base class of implementation type {}", name, name_of<impl_t>() );
+        objects_diag.fail("Interface type {} is not a base class of implementation type {}", name, name_of<impl_t>() );
 
     register_object_unchecked<itf_t, impl_t>(mock_objects);
 }
@@ -93,7 +93,7 @@ shared_ptr<itf_t> objects::get()
 {
     auto option_ptr = get_internal<itf_t>();
     if (!option_ptr)
-        diag.fail("Requested unregistered object {}.", name_of<itf_t>());
+        objects_diag.fail("Requested unregistered object {}.", name_of<itf_t>());
     return option_ptr;
 }
 

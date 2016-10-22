@@ -1,8 +1,12 @@
 #pragma once
 
+#include <memory>
+
+#include "objects/objects.h"
+
 namespace hardware
 {
-    class motor
+    struct motor
     {
         /**
          * @brief      Sets the acceleration.
@@ -41,8 +45,15 @@ namespace hardware
          *
          * @param[in]  new_position  The new position in m.
          */
-        virtual void calibrate(float new_position) = 0;
+        virtual void calibrate(double new_position) = 0;
 
         virtual ~motor() {}
     };
-}
+
+    struct motor_factory
+        : objects::object
+    {
+        virtual std::unique_ptr<motor> create(int track_id) = 0;
+    };
+
+} // namespace hardware
