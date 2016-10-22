@@ -21,8 +21,10 @@ namespace logging
     public:
 
         logger(std::string const & name)
-            : inner( spdlog::basic_logger_mt(name, LOG_FILE) )
-        {}
+            : inner( spdlog::get(name) )
+        {
+            inner = inner ? inner : spdlog::basic_logger_mt(name, LOG_FILE, true);
+        }
 
         template <typename... args_t> void trace(char const * fmt, const args_t&... args) {
             inner->trace(fmt, args...);
