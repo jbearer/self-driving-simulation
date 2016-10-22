@@ -81,5 +81,8 @@ test_button: test_button.o button.o objects.o raspi.o
 test_button.o: src/hardware/test/test_button.cpp include/hardware/button.h $(OBJECTS_HEADERS) $(LOGGING_HEADERS)
 	$(CXX) $(CXX_FLAGS) $<
 
+test_grid: test_grid.o grid.o car.o objects.o intersection.o
+	$(CXX) -o $@ $^ $(LINK_FLAGS)
+
 test_grid.o: src/simulation/test/test_grid.cpp include/simulation/grid.h $(OBJECTS_HEADERS) $(LOGGING_HEADERS)
 	$(CXX) $(CXX_FLAGS) $<

@@ -1,5 +1,10 @@
 #include "simulation/grid.h"
 
+#include "logging/logging.h"
+
+using namespace logging;
+
+static logger diag("grid");
 
 Grid::Grid(std::vector<Intersection*> intersections, std::vector<Auto*> autos,
 	Human* human):
@@ -14,9 +19,13 @@ std::vector<double> Grid::find_accelerations()
 	std::vector<Intersection*> cross_intersections = intersections_ahead(*human_);
 	for (auto intersection : cross_intersections) {
 
+		double disp = human_->pos_of_intersection(*intersection) - human_->position();
+		if (disp < 0)
+			diag.error("displacement is negative.  Intersection should not have in list of intersections_ahead");
+
 		// the human can hypothetically stay forever, so the max
 		// time is set to INFINITY
-		double min_time = human_->min_time_to_enter(*intersection);
+		double min_time = human_->calculate_time(disp, human_->velocity(), Car::MAX_ACC);
 		intersection->set_window(Intersection::Window(min_time, INFINITY));
 
 	}

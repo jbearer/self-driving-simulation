@@ -109,12 +109,19 @@ double Car::wd_of_intersection(const Intersection& i) const
 	}
 }
 
+// TODO!!!
+double Auto::final_acc() const
+{
+	return -1;
+}
+
 ///////////// CALCULATING VALUES WITH KINETMATICS //////////////////
 
 
 double Car::calculate_vel(double vel, double acc, double time)
-{
-	double v_final = std::min(calculate_vel_raw(vel, acc, time), MAX_VEL);
+{	// TODO: couldn't figure out how to compile: undefined reference to
+ 	// constexpr MAX_VEL.  Therefore, magic number
+	double v_final = std::min(calculate_vel_raw(vel, acc, time), .5);
 
 	check_vel(v_final);
 	return v_final;
