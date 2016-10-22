@@ -1,4 +1,4 @@
-#include "grid.h"
+#include "simulation/grid.h"
 
 int main()
 {
@@ -30,17 +30,33 @@ int main()
 
 	Intersection bottom_left(2, 3, wd, wd, left_across, bottom_down);
 	Intersection bottom_mid(2, 4, wd, wd, mid_across, bottom_down);
-	Intersection bottom_down(2, 5, wd, wd, right_across, bottom_down);
+	Intersection bottom_right(2, 5, wd, wd, right_across, bottom_down);
 
 	double length = .04; //TODO change so customize per car
 
-	Auto top(0, length);
-	Human mid_across(1, length);
-	Auto bottom(2, length);
-	
-	Auto left(3, length);
-	Auto mid_down(4, length);
-	Auto right(5, length);
+	Auto top_car(0, length);
+	Human human(1, length);
+	Auto bottom_car(2, length);
+
+	Auto left_car(3, length);
+	Auto mid_down_car(4, length);
+	Auto right_car(5, length);
+
+	std::vector<Intersection*> intersections
+	{
+		&top_left, &top_mid, &top_right,
+		&mid_left, &mid_mid, &mid_right,
+		&bottom_left, &bottom_mid, &bottom_right
+	};
+
+	std::vector<Auto*> autos
+	{
+		&top_car, &bottom_car,
+		&left_car, &mid_down_car, &right_car
+	};
+
+	Grid myGrid(intersections, autos, &human);
+	myGrid.find_accelerations();
 
 }
 

@@ -169,7 +169,7 @@ private:
 };
 
 class Human : public Car {
-
+public:
 	Human(int track_id, int length);
 
 };
