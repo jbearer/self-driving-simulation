@@ -73,6 +73,7 @@ struct motor_impl
         curr = 0;
         next = lockless_delay();
         accel = acceleration_;
+        diag.info("SET_ACCEL delay = {}", lockless_delay());
 
         start.notify_all();
     }
@@ -135,7 +136,7 @@ private:
                 // Update delay so that we accelerate
                 lock_guard<mutex> lock(data_lock);
                 delay = lockless_delay();
-                diag.info("delay = {}", delay);
+                diag.info("PWM delay = {}", delay);
             }
 
             pi->digital_write(pin, raspi::HIGH);
