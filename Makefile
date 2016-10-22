@@ -32,3 +32,6 @@ motor.o: src/hardware/motor.cpp include/hardware/motor.h logging
 
 sensor.o: src/hardware/sensor.cpp include/hardware/sensor.h logging
 	$(CXX) $(CXX_FLAGS) $<
+
+button.o: src/hardware/button.cpp include/hardware/button.h logging
+	$(CXX) $(CXX_FLAGS) $<
