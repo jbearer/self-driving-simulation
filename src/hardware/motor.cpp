@@ -115,14 +115,16 @@ private:
     {
         {
             unique_lock<mutex> l(data_lock);
+            diag.trace("Idling, waiting for acceleration.");
+            start.wait(l, [this]() { return !stopped() || halt; });
+        }
 
+        {
+            lock_guard<mutex> l(data_lock);
             if (halt) {
                 diag.info("Halt requested, exiting.");
                 return;
             }
-
-            diag.trace("Idling, waiting for acceleration.");
-            start.wait(l, [this]() { return !stopped(); });
         }
 
         diag.trace("Acceleration detected, beginning pulse wave modulation.");
@@ -134,8 +136,14 @@ private:
         double delay;
         while( !stopped() ) {
             {
-                // Update delay so that we accelerate
                 lock_guard<mutex> lock(data_lock);
+
+                // While we have the lock, check if we've been asked to quit
+                if (halt) {
+                    diag.info("Halt requested, exiting.");
+                    return;
+                }
+
                 delay = lockless_delay();
                 diag.info("PWM delay = {}", delay);
             }
@@ -155,12 +163,6 @@ private:
                 next = 4688.0 / (a * 1e-6 * curr + v_0) + curr;
 
                 pos += RADIANS_PER_TURN * RADIUS;
-
-                // While we have the lock, check if we've been asked to quit
-                if (halt) {
-                    diag.info("Halt requested, exiting.");
-                    return;
-                }
             }
         }
 
