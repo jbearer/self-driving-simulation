@@ -71,7 +71,7 @@ int main()
 			max_sum = sum;
 			max_acc_s = acc_s;
 		}
-	} while (std::next_permutation(intersections.begin(), intersections.end()));
+	} while (std::next_permutation(autos.begin(), autos.end()));
 
 	// max_acc_s is bound to the highest sum of accelerations;
 
