@@ -208,7 +208,7 @@ private:
     // The radius of the wheel in meters. Used to convert between angular and linear units.
     static constexpr double RADIUS = 0.075;
 
-    static constexpr double RADIANS_PER_TURN = PI / 100;
+    static constexpr double RADIANS_PER_TURN = (PI / 2) / (50 * 32);
 
     // If delay is longer than this, the motor is considered to be stopped.
     static constexpr double STOP_THRESHOLD = 4000;
