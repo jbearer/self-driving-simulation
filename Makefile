@@ -63,8 +63,8 @@ test_objects: test_objects.o objects.o
 test_objects.o: src/objects/test/test_objects.cpp $(OBJECTS_HEADERS) $(LOGGING_HEADERS)
 	$(CXX) $(CXX_FLAGS) $<
 
-test_motor: test_motor.o motor.o objects.o
-	$(CXX) -o $@ motor.o objects.o test_motor.o $(LINK_FLAGS)
+test_motor: test_motor.o motor.o objects.o raspi.o
+	$(CXX) -o $@ $^ $(LINK_FLAGS)
 
 test_motor.o: src/hardware/test/test_motor.cpp include/hardware/motor.h $(OBJECTS_HEADERS) $(LOGGING_HEADERS)
 	$(CXX) $(CXX_FLAGS) $<
