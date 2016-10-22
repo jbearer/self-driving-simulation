@@ -134,7 +134,7 @@ private:
             {
                 // Update delay so that we accelerate
                 lock_guard<mutex> lock(data_lock);
-                double v_0 = velocity_offset;
+                double v_0 = (velocity_offset / RADIUS) * 60 / (2 * PI);
                 double a   = (accel / RADIUS) * 60 / (2 * PI); // Linear to angular
                 delay = 4688.0 / (a * 1e-6 * delay + v_0);
 
