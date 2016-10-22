@@ -141,9 +141,9 @@ private:
             }
 
             pi->digital_write(pin, raspi::HIGH);
-            sleep(delay);
+            sleep(delay/2);
             pi->digital_write(pin, raspi::LOW);
-            sleep(delay);
+            sleep(delay/2);
 
             {
                 lock_guard<mutex> lock(data_lock);
