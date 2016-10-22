@@ -1,6 +1,6 @@
 CXX = g++
 INCLUDE = -Iinclude/ -Itpc/logging/include
-CXX_FLAGS = -c -g -std=c++11 -Wall -Wextra -pedantic -Werror $(INCLUDE)
+CXX_FLAGS = -c -g -std=c++14 -Wall -Wextra -pedantic -Werror $(INCLUDE)
 LINK_FLAGS = -lpthread
 
 TARGETS = test_objects
@@ -20,20 +20,23 @@ objects: include/objects/objects.h src/objects/objects_impl.h
 test_objects: test_objects.o objects
 	$(CXX) -o $@ $< $(LINK_FLAGS)
 
-test_objects.o: src/objects/test/test_objects.cpp include/objects/objects.h
+test_objects.o: src/objects/test/test_objects.cpp objects
 	$(CXX) $(CXX_FLAGS) $<
 
 ####################################################################################################
 # HARDWARE OBJECTS
 ####################################################################################################
 
-motor.o: src/hardware/motor.cpp include/hardware/motor.h logging
+motor.o: src/hardware/motor.cpp include/hardware/motor.h objects logging
 	$(CXX) $(CXX_FLAGS) $<
 
-sensor.o: src/hardware/sensor.cpp include/hardware/sensor.h logging
+sensor.o: src/hardware/sensor.cpp include/hardware/sensor.h objects logging
 	$(CXX) $(CXX_FLAGS) $<
 
-button.o: src/hardware/button.cpp include/hardware/button.h logging
+button.o: src/hardware/button.cpp include/hardware/button.h objects logging
+	$(CXX) $(CXX_FLAGS) $<
+
+raspi.o: src/hardware/raspi.cpp include/hardware/raspi.h objects logging
 	$(CXX) $(CXX_FLAGS) $<
 
 car.o: src/simulation/car.cpp include/simulation/car.h logging
