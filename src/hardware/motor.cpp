@@ -36,7 +36,8 @@ struct motor_impl
     explicit motor_impl(int pin_)
         : pi( objects::get<raspi>() )
         , pin(pin_)
-        , delay(STOP_THRESHOLD + 1)     // This ensures we are stopped at first
+        , curr(0)
+        , next(STOP_THRESHOLD + 1)     // This ensures we are stopped at first
         , accel(0.0)
         , pos(0.0)
         , velocity_offset( velocity() )
@@ -63,11 +64,14 @@ struct motor_impl
 
         // If we were stopped, we may not be anymore
         if ( stopped() ) {
-            delay = STOP_THRESHOLD;  // This ensures we start moving again
+            curr = 0;
+            next = STOP_THRESHOLD;  // This ensures we start moving again
         }
 
         // Things are changing, so we store our velocity offset
         velocity_offset = lockless_velocity();
+        curr = 0;
+        next = lockless_delay();
         accel = acceleration_;
 
         start.notify_all();
@@ -125,23 +129,27 @@ private:
 
     void pwm()
     {
-        double curr = 0;
-        double next = delay;
-
+        double delay;
         while( !stopped() ) {
+            {
+                // Update delay so that we accelerate
+                lock_guard<mutex> lock(data_lock);
+                delay = lockless_delay();
+                diag.info("delay = {}", delay);
+            }
+
             pi->digital_write(pin, raspi::HIGH);
             sleep(delay);
             pi->digital_write(pin, raspi::LOW);
             sleep(delay);
 
             {
-                // Update delay so that we accelerate
                 lock_guard<mutex> lock(data_lock);
+
                 double v_0 = (velocity_offset / RADIUS) * 60 / (2 * PI);
                 double a   = (accel / RADIUS) * 60 / (2 * PI); // Linear to angular
                 curr = next;
                 next = 4688.0 / (a * 1e-6 * curr + v_0);
-                delay = next - curr;
 
                 pos += RADIANS_PER_TURN * RADIUS;
 
@@ -158,13 +166,18 @@ private:
 
     bool stopped() const
     {
-        return delay > STOP_THRESHOLD;
+        return lockless_delay() > STOP_THRESHOLD;
     }
 
     // We sometimes need to calculate velocity when we already have the lock, and thus can't call velocity()
     double lockless_velocity() const
     {
-        return stopped() ? 0.0 : (1e6 / delay) * RADIANS_PER_TURN * RADIUS;
+        return stopped() ? 0.0 : (1e6 / lockless_delay()) * RADIANS_PER_TURN * RADIUS;
+    }
+
+    double lockless_delay() const
+    {
+        return next - curr;
     }
 
     void sleep(double us) const
@@ -178,7 +191,8 @@ private:
     int                 pin;
 
     // Kinematics
-    double              delay;
+    double              curr;
+    double              next;
     double              accel;
     double              pos;
     double              velocity_offset;
