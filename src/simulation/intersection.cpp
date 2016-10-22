@@ -12,7 +12,7 @@ Intersection::Intersection(int across_id, int down_id,
 
 	across_id_{across_id}, down_id_{down_id},
 	across_wd_{across_wd}, down_wd_{down_wd},
-	across_pos_{across_wd}, down_pos_{down_pos},
+	across_pos_{across_pos}, down_pos_{down_pos},
 	window_{nullptr}
 {
 	// nothing to do

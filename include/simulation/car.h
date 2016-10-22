@@ -125,6 +125,7 @@ class Auto : public Car {
 
 public:
 
+	Auto(int track_id, int length);
 
 	/**
 	 * @brief      Determines the maximum acceleration such that it will make
@@ -168,5 +169,7 @@ private:
 };
 
 class Human : public Car {
+
+	Human(int track_id, int length);
 
 };

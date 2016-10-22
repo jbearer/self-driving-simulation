@@ -14,7 +14,8 @@ public:
 
 	typedef std::pair<double, double> Window;
 
-	Intersection(int across_id, int down_id);
+	Intersection(int across_id, int down_id, double across_wd, double down_wd,
+			double across_pos, double down_pos);
 
 	Intersection(const Intersection& rhs) = delete;
 

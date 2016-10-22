@@ -17,6 +17,16 @@ Car::Car(int track_id, int length):
 	motor_ = factory->create(track_id);
 }
 
+Auto::Auto(int track_id, int length): Car(track_id, length)
+{
+	// nothing to do
+}
+
+Human::Human(int track_id, int length): Car(track_id, length)
+{
+	// nothing to do
+}
+
 double Auto::optimal_acc(const Intersection& i, double time, double pos, double vel) const
 {
 	// if the car can go through at its maximal acceleration, then it should
