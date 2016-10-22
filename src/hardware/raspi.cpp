@@ -39,8 +39,6 @@ struct raspi_impl
 
     void digital_write(int pin, digital_val_t value)
     {
-        diag.trace("Write {} to pin {}.", value, pin);
-
         int reg = pin / 32;                             // determines i for GPSET[i] and GPCLR[i]
         int offset = pin % 32;                          // determines offset in GPSET[i]/GPCLR[i]
 
