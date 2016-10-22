@@ -70,8 +70,8 @@ struct motor_impl
 
         // Things are changing, so we store our velocity offset
         velocity_offset = lockless_velocity();
-        curr = 0;
         next = lockless_delay();
+        curr = 0;
         accel = acceleration_;
         diag.info("SET_ACCEL delay = {}", lockless_delay());
 
