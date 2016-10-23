@@ -39,8 +39,8 @@ register_mock_object(widget, mock_widget);
 
 int main()
 {
-     assert( get<widget>()->stat() == REAL );
-     mock<widget>();
-     assert( get<widget>()->stat() == MOCK );
+    assert( get<widget>()->stat() == REAL );
+    mock<widget>();
+    assert( get<widget>()->stat() == MOCK );
     return 0;
 }
