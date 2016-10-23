@@ -3,7 +3,7 @@ INCLUDE = -Iinclude/ -Itpc/logging/include
 CXX_FLAGS = -c -g -std=c++14 -Wall -Wextra -pedantic -Werror $(INCLUDE)
 LINK_FLAGS = -lpthread
 
-TARGETS = test_objects test_motor test_motor_simple test_button
+TARGETS = test_objects test_motor test_motor_simple test_button test_grid
 
 LOGGING_HEADERS = include/logging/logging.h tpc/logging/include/spdlog/spdlog.h
 
