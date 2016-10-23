@@ -6,8 +6,8 @@ namespace hardware
 {
     struct button
     {
+        virtual int pin() const = 0;
         virtual bool is_pushed() const = 0;
-
         virtual ~button() {}
     };
 

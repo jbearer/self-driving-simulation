@@ -1,35 +1,69 @@
-#include <cstdlib>
+#include <cassert>
+#include <memory>
 #include <unistd.h>
 
 #include "hardware/button.h"
+#include "hardware/pi_emulator.h"
 #include "logging/logging.h"
 #include "objects/objects.h"
 
+using namespace std;
 using namespace hardware;
 
 static logging::logger diag("test/button");
 
-int main(int argc, char ** argv)
+struct button_emulator
+    : input_device
 {
-    if (argc != 2) {
-        diag.fail("Usage: {} <track>", argv[0]);
+
+    void connected(unique_ptr<pi_emu::input_handle> handle_)
+    {
+        handle = move(handle_);
     }
 
-    int track = atoi(argv[1]);
+    void push()
+    {
+        assert(handle);
+        handle->write(raspi::HIGH);
+    }
+
+    void unpush()
+    {
+        assert(handle);
+        handle->write(raspi::LOW);
+    }
+
+    bool connected() const
+    {
+        return bool(handle);
+    }
+
+private:
+    unique_ptr<pi_emu::input_handle> handle;
+};
+
+int main()
+{
+    auto pi = emulate_raspi();
     auto factory = objects::get<button_factory>();
-    auto butt = factory->create(track);
-    bool state = butt->is_pushed();
+    auto butt = factory->create(0);
 
-    diag.info("Initial state is {}.", state ? "pushed" : "unpushed");
-
-    while (true) {
-        bool new_state = butt->is_pushed();
-        if (new_state != state) {
-            diag.info("Button was {}.", new_state ? "pushed": "unpushed");
-            state = new_state;
-        }
-        usleep(1000);
+    // Connect a button to the emulator
+    shared_ptr<button_emulator> button_emu(new button_emulator);
+    pi->connect_device(butt->pin(), button_emu);
+    while ( !button_emu->connected() ) {
+        usleep(1e6);
     }
+
+    // Push the button and see if the software responds accordingly
+    button_emu->push();
+    assert( butt->is_pushed() );
+    usleep(1e6);
+    assert( butt->is_pushed() );
+    button_emu->unpush();
+    assert( !butt->is_pushed() );
+    usleep(1e6);
+    assert( !butt->is_pushed() );
 
     return 0;
 }

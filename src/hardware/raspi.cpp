@@ -161,7 +161,7 @@ struct mock_raspi
         if ( it == pin_modes.end() ) {
             diag.fail("Attempted to read pin {} before configuring for input.", pin);
         }
-        if (it->second != OUTPUT) {
+        if (it->second != INPUT) {
             diag.fail("Attempted to read output pin {}.", pin);
         }
 

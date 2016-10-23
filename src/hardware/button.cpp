@@ -25,19 +25,24 @@ struct button_impl
 {
     explicit button_impl(int pin_)
         : pi( objects::get<raspi>() )
-        , pin(pin_)
+        , pin_id(pin_)
     {
-        pi->pin_mode(pin, raspi::INPUT);
+        pi->pin_mode(pin_id, raspi::INPUT);
+    }
+
+    int pin() const
+    {
+        return pin_id;
     }
 
     bool is_pushed() const
     {
-        return pi->digital_read(pin) == raspi::HIGH;
+        return pi->digital_read(pin_id) == raspi::HIGH;
     }
 
 private:
     shared_ptr<raspi>   pi;
-    int                 pin;
+    int                 pin_id;
 };
 
 struct mock_button
@@ -46,6 +51,11 @@ struct mock_button
     bool is_pushed() const
     {
         return false;
+    }
+
+    int pin() const
+    {
+        return 0;
     }
 };
 
