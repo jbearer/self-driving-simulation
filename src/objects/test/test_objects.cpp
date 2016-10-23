@@ -11,7 +11,6 @@ enum impl_t
 };
 
 struct widget
-    : object
 {
     virtual impl_t stat() const = 0;
 };

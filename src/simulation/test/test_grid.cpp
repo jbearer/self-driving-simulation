@@ -1,3 +1,4 @@
+#include "objects/objects.h"
 #include "simulation/grid.h"
 
 int main()

@@ -2,8 +2,6 @@
 
 #include <memory>
 
-#include "objects/objects.h"
-
 namespace hardware
 {
     struct motor
@@ -51,7 +49,6 @@ namespace hardware
     };
 
     struct motor_factory
-        : objects::object
     {
         virtual std::unique_ptr<motor> create(int track_id) = 0;
     };

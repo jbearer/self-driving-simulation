@@ -3,6 +3,7 @@
 
 #include "hardware/raspi.h"
 #include "logging/logging.h"
+#include "objects/objects.h"
 
 #define GPFSEL   ((volatile unsigned int *) (gpio + 0))
 #define GPSET    ((volatile unsigned int *) (gpio + 7))

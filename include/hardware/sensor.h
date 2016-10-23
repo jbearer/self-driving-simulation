@@ -4,8 +4,6 @@
 #include <functional>
 #include <string>
 
-#include "objects/objects.h"
-
 namespace hardware
 {
     struct sensor
@@ -16,7 +14,6 @@ namespace hardware
     };
 
     struct sensor_factory
-        : objects::object
     {
         virtual std::unique_ptr<sensor> create(int track_id) = 0;
     };

@@ -1,3 +1,5 @@
+#include <vector>
+
 #include "simulation/grid.h"
 
 #include "logging/logging.h"
@@ -100,9 +102,9 @@ struct {
 	}
 } down_sort;
 
-vector<Intersection*> Grid::intersections_ahead(const Car& car)
+std::vector<Intersection*> Grid::intersections_ahead(const Car& car)
 {
-	vector<Intersection*> intsctn_s;
+	std::vector<Intersection*> intsctn_s;
 
 	// determine which intersections are ahead
 	bool sort_across = false;

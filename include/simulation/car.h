@@ -4,6 +4,7 @@
  * @brief includes the implentation of an abstract class Car
  * Extended by Human and Auto
  */
+#include <memory>
 #include <vector>
 
 #include "intersection.h"
@@ -117,7 +118,7 @@ public:
 
 protected:
 
-	unique_ptr<motor> motor_;
+	std::unique_ptr<motor> motor_;
 	int track_id_;
 	double length_;
 

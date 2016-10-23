@@ -1,11 +1,8 @@
 #pragma once
 
-#include "objects/objects.h"
-
 namespace hardware
 {
     struct raspi
-        : objects::object
     {
         enum digital_val_t
         {

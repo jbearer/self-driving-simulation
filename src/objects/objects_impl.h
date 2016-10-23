@@ -7,13 +7,16 @@
 
 #include "logging/logging.h"
 
-using namespace std;
-
 namespace objects {
 
     namespace impl {
 
-        typedef function< shared_ptr<object>(void) > factory_t;
+        // We can't instantiate templates like shared_ptr with void type, so we use this dummy
+        // object instead, as a way of erasing type information so we can store all of our objects
+        // in one container.
+        struct object {};
+
+        typedef std::function< std::shared_ptr<object>(void) > factory_t;
 
         template<typename any_t>
         std::string name_of()
@@ -30,34 +33,30 @@ namespace objects {
     template<typename itf_t, typename impl_t>
     objects::object_registration<itf_t, impl_t>::object_registration()
     {
-        static_assert(is_base_of<object, itf_t>::value,
-                      "register_object: interface type must inherit from object");
-        static_assert(is_base_of<itf_t, impl_t>::value,
+        static_assert(std::is_base_of<itf_t, impl_t>::value,
                       "register_object: implementation type must inherit from interface type");
 
         impl::object_registration( impl::name_of<itf_t>(), []() {
-            return std::shared_ptr<object>( static_cast<object *>(new impl_t) );
+            return std::shared_ptr<impl::object>( (impl::object *)(new impl_t) );
         });
     }
 
     template<typename itf_t, typename impl_t>
     objects::mock_object_registration<itf_t, impl_t>::mock_object_registration()
     {
-        static_assert(is_base_of<object, itf_t>::value,
-                      "register_mock_object: interface type must inherit from object");
-        static_assert(is_base_of<itf_t, impl_t>::value,
+        static_assert(std::is_base_of<itf_t, impl_t>::value,
                       "register_mock_object: implementation type must inherit from interface type");
 
         impl::mock_object_registration( impl::name_of<itf_t>(), []() {
-            return std::shared_ptr<object>( static_cast<object *>(new impl_t) );
+            return std::shared_ptr<impl::object>( (impl::object *)(new impl_t) );
         });
     }
 
     template<typename itf_t>
-    shared_ptr<itf_t> get()
+    std::shared_ptr<itf_t> get()
     {
         auto untyped_ptr = impl::get( impl::name_of<itf_t>() );
-        return std::shared_ptr<itf_t>( untyped_ptr, static_cast<itf_t*>( untyped_ptr.get() ) );
+        return std::shared_ptr<itf_t>( untyped_ptr, (itf_t *)( untyped_ptr.get() ) );
     }
 
     template<typename itf_t>

@@ -5,11 +5,6 @@
 namespace objects
 {
     /**
-     * @brief      All registered types must inherit from object
-     */
-    struct object {};
-
-    /**
      * @brief      Register a singleton object.
      *
      * @tparam     itf_t   The interface represented by this registration.
