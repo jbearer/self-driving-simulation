@@ -2,11 +2,13 @@
 
 #include <memory>
 
+#include "hardware/hardware.h"
+
 namespace hardware
 {
     struct button
+        : device
     {
-        virtual int pin() const = 0;
         virtual bool is_pushed() const = 0;
         virtual ~button() {}
     };

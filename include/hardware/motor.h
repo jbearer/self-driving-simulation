@@ -2,9 +2,12 @@
 
 #include <memory>
 
+#include "hardware/hardware.h"
+
 namespace hardware
 {
     struct motor
+        : device
     {
         /**
          * @brief      Sets the acceleration.

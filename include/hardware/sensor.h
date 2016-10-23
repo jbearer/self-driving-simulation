@@ -4,9 +4,12 @@
 #include <functional>
 #include <string>
 
+#include "hardware/hardware.h"
+
 namespace hardware
 {
     struct sensor
+        : device
     {
         virtual bool is_triggered() const = 0;
 

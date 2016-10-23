@@ -35,7 +35,7 @@ struct motor_impl
 {
     explicit motor_impl(int pin_)
         : pi( objects::get<raspi>() )
-        , pin(pin_)
+        , pin_id(pin_)
         , curr(0)
         , next(STOP_THRESHOLD + 1)     // This ensures we are stopped at first
         , accel(0.0)
@@ -43,8 +43,8 @@ struct motor_impl
         , velocity_offset( velocity() )
         , halt(false)
     {
-        diag.info("Initializing motor at pin {}.", pin);
-        pi->pin_mode(pin, raspi::OUTPUT);
+        diag.info("Initializing motor at pin {}.", pin_id);
+        pi->pin_mode(pin_id, raspi::OUTPUT);
         motor_thread = thread( bind(&motor_impl::idle, this) );
     }
 
@@ -56,6 +56,11 @@ struct motor_impl
             halt = true;
         }
         motor_thread.join();
+    }
+
+    int pin() const
+    {
+        return pin_id;
     }
 
     void set_acceleration(double acceleration_)
@@ -138,9 +143,9 @@ private:
                 diag.info("delay = {}", delay);
             }
 
-            pi->digital_write(pin, raspi::HIGH);
+            pi->digital_write(pin_id, raspi::HIGH);
             sleep(delay);
-            pi->digital_write(pin, raspi::LOW);
+            pi->digital_write(pin_id, raspi::LOW);
             sleep(delay);
 
             {
@@ -188,7 +193,7 @@ private:
 
     // Hardware
     shared_ptr<raspi>   pi;
-    int                 pin;
+    int                 pin_id;
 
     // Kinematics
     double              curr;
@@ -221,6 +226,11 @@ struct mock_motor
         , position_offset(0)
         , velocity_offset(0)
     {}
+
+    int pin() const
+    {
+        return 0;
+    }
 
     void set_acceleration(double acceleration_)
     {
