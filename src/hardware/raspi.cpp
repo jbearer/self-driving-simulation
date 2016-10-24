@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <atomic>
 #include <fcntl.h>
 #include <mutex>
@@ -241,6 +242,7 @@ void hardware::oscilloscope::write(raspi::digital_val_t new_value)
 void hardware::oscilloscope::sample()
 {
     while ( !atomic_load(&halt) ) {
+        auto took_sample = sys::now();
         vector<window_pair_t> newly_filled_windows;
 
         {
@@ -274,7 +276,8 @@ void hardware::oscilloscope::sample()
 
         filled_signal.notify_one();
 
-        sys::sleep(double(1e6) / sr);
+        sys::useconds_t sleep_time = ((1.0 / sr) - sys::seconds_since(took_sample)) * 1e6;
+        sys::sleep( max(sleep_time, sys::useconds_t(0)) );
     }
 }
 
