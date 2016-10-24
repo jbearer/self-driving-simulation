@@ -1,9 +1,11 @@
 #include <atomic>
 #include <condition_variable>
 #include <functional>
+#include <list>
 #include <memory>
 #include <mutex>
 #include <queue>
+#include <string>
 #include <thread>
 #include <vector>
 
@@ -50,6 +52,7 @@ namespace hardware {
     {
         typedef std::vector<raspi::digital_val_t> window_t;
         typedef std::function< void(window_t&&) > window_callback_t;
+        typedef raspi::digital_val_t              trigger_t;
 
         /**
          * @brief      Create a new oscilloscope with a fixed sampling rate.
@@ -65,11 +68,21 @@ namespace hardware {
          *             ending when it is full. This process happens asynchronously, so fill_window
          *             returns immediately. When the window is ready, the function callback will be
          *             called with the filled window as an argument.
-         *
+         * @param[in]  name     Used by the logger to identify the window when tracking its progress.
          * @param[in]  size     The size of the window in microseconds.
          * @param[in]  callback Function to be passed the window when it is ready.
          */
-        void fill_window(long size, window_callback_t callback);
+        void fill_window(std::string const & name, long size, window_callback_t const & callback);
+
+        /**
+         * @brief      Obtain a window of samples starting from a time dependent on trigger:
+         *             trigger == HIGH: start sampling the next time the voltage changes from low to
+         *             high.
+         *             trigger == LOW: start sampling the next time the voltage changes from high to
+         *             low.
+         */
+        void fill_window(std::string const & name, long size, trigger_t trigger,
+                         window_callback_t const & callback);
 
         /**
          * @brief      The sampling rate in hertz.
@@ -88,19 +101,58 @@ namespace hardware {
         // Return requested windows to callers as they are finished
         void flush();
 
-        typedef std::pair<window_t, window_callback_t> window_pair_t;
+        struct window_req
+        {
+            std::string         name;
+            window_t            data;
+            size_t              num_samples;
+            window_callback_t   callback;
+
+            window_req(std::string const & name_,
+                       window_t const & data_,
+                       size_t num_samples_,
+                       window_callback_t const & callback_)
+                : name(name_)
+                , data(data_)
+                , num_samples(num_samples_)
+                , callback(callback_)
+            {}
+
+            // We don't want to be copying these, because copying data can be very expensive
+            window_req(window_req const &) = delete;
+            window_req(window_req &&) = default;
+            window_req & operator=(window_req const &) = delete;
+            window_req & operator=(window_req && other)
+            {
+                name = std::move(other.name);
+                data = std::move(other.data);
+                num_samples = std::move(other.num_samples);
+                callback = std::move(other.callback);
+                return *this;
+            }
+        };
+
+        typedef std::list<window_req>       window_list_t;
+        typedef std::queue<window_req>      window_queue_t;
+
+        // Windows which will be requested when next triggered
+        window_list_t                       high_triggers;
+        window_list_t                       low_triggers;
 
         // Windows which have been requested and need to be filled
-        std::vector<window_pair_t>          requested_windows;
+        window_list_t                       requested_windows;
         std::mutex                          requests_lock;
 
         // Windows which have been filled and are waiting to be returned to the caller
-        std::queue<window_pair_t>           filled_windows;
+        window_queue_t                      filled_windows;
         std::mutex                          filled_lock;
         std::condition_variable             filled_signal; // Signal that a window needs flushing
 
-        // The last known reading from the raspberry pi
+        // The most recent reading from the raspberry pi
         std::atomic<raspi::digital_val_t>   value;
+
+        // The previous sample from the raspberry pi
+        raspi::digital_val_t                last_sample;
 
         // The sampling rate
         long                                sr;

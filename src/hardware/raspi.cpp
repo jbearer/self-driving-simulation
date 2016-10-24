@@ -2,6 +2,7 @@
 #include <atomic>
 #include <fcntl.h>
 #include <mutex>
+#include <string>
 #include <sys/mman.h>
 #include <sys/time.h>
 #include <unordered_map>
@@ -220,13 +221,41 @@ hardware::oscilloscope::oscilloscope(long sr_)
     , flusher( bind(&hardware::oscilloscope::flush, this) )
 {}
 
-void hardware::oscilloscope::fill_window(long size, window_callback_t callback)
+void hardware::oscilloscope::fill_window(
+    string const & name, long size, window_callback_t const & callback)
 {
     lock_guard<mutex> lock(requests_lock);
+
     size_t num_samples = (size * sr) * 1e-6;
+
+    diag.trace("Received request to fill window {}.\n"
+               "\tsize = {} us\n"
+               "\trate = {} Hz\n"
+               "\t{} samples\n",
+               name, size, sr, num_samples);
+
     window_t window;
     window.reserve(num_samples);
-    requested_windows.emplace_back(move(window), callback);
+    requested_windows.emplace_back(name, move(window), num_samples, callback);
+}
+
+void hardware::oscilloscope::fill_window(
+    string const & name, long size, trigger_t trigger, window_callback_t const & callback)
+{
+    lock_guard<mutex> lock(requests_lock);
+
+    size_t num_samples = (size * sr) * 1e-6;
+
+    diag.trace("Received request to fill window {} on trigger {}.\n"
+               "\tsize = {} us\n"
+               "\trate = {} Hz\n"
+               "\t{} samples\n",
+               name, trigger == raspi::HIGH ? "HIGH" : "LOW", size, sr, num_samples);
+
+    window_t window;
+    window.reserve(num_samples);
+    (trigger == raspi::HIGH ? high_triggers : low_triggers).emplace_back(
+        name, move(window), num_samples, callback);
 }
 
 long hardware::oscilloscope::sampling_rate() const
@@ -243,7 +272,7 @@ void hardware::oscilloscope::sample()
 {
     while ( !atomic_load(&halt) ) {
         auto took_sample = sys::now();
-        vector<window_pair_t> newly_filled_windows;
+        window_list_t newly_filled_windows;
 
         {
             lock_guard<mutex> lock(requests_lock);
@@ -251,14 +280,26 @@ void hardware::oscilloscope::sample()
             // Take a sample
             raspi::digital_val_t sample = atomic_load(&value);
 
+            // Request any applicable triggers
+            if (sample == raspi::HIGH && last_sample == raspi::LOW) {
+                diag.info( "HIGH trigger activated, {} requests triggered.", high_triggers.size() );
+                requested_windows.splice( requested_windows.end(), move(high_triggers) );
+            } else if (sample == raspi::LOW && last_sample == raspi::HIGH) {
+                diag.info( "LOW trigger activated, {} requests triggered.", low_triggers.size() );
+                requested_windows.splice( requested_windows.end(), move(low_triggers) );
+            }
+
+            last_sample = sample;
+
             // Update the requested windows
             auto i = requested_windows.begin();
             while ( i != requested_windows.end() ) {
-                auto & window_pair = *i;
-                window_pair.first.push_back(sample);
-                if ( window_pair.first.size() == window_pair.first.capacity() ) {
+                auto & req = *i;
+                req.data.push_back(sample);
+                if (req.data.size() == req.num_samples) {
                     // The window has been filled and is ready to be returned to the caller
-                    newly_filled_windows.push_back( move(window_pair) );
+                    diag.trace("Filled window {}.", req.name);
+                    newly_filled_windows.push_back( move(req) );
                     i = requested_windows.erase(i);
                 } else {
                     ++i;
@@ -269,8 +310,9 @@ void hardware::oscilloscope::sample()
             lock_guard<mutex> lock(filled_lock);
 
             // Queue the new windows to be flushed
-            for (auto const & window_pair : newly_filled_windows) {
-                filled_windows.push( move(window_pair) );
+            for (auto & req : newly_filled_windows) {
+                diag.trace("Queued window {} for flush.", req.name);
+                filled_windows.push( move(req) );
             }
         }
 
@@ -284,7 +326,7 @@ void hardware::oscilloscope::sample()
 void hardware::oscilloscope::flush()
 {
     while ( !atomic_load(&halt) ) {
-        queue<window_pair_t> to_flush;
+        window_queue_t to_flush;
 
         // Wait until there are windows to be flushed
         unique_lock<mutex> lock(filled_lock);
@@ -292,6 +334,7 @@ void hardware::oscilloscope::flush()
             // Take the windows off the queue, but don't flush them yet; in case the callbacks are
             // expensive we wait until we're out of the lock
             while ( !filled_windows.empty() ) {
+                diag.trace("Dequeued window {}, preparing for flush.", filled_windows.front().name);
                 to_flush.push( move(filled_windows.front() ) );
                 filled_windows.pop();
             }
@@ -301,8 +344,9 @@ void hardware::oscilloscope::flush()
         // Now we're done with the lock, we can safely call expensive callbacks without blocking
         // the sampling thread
         while ( !to_flush.empty() ) {
-            auto & window_pair = to_flush.front();
-            window_pair.second( move(window_pair.first) );
+            auto & req = to_flush.front();
+            diag.trace("Flushing window {}.", req.name);
+            req.callback( move(req.data) );
             to_flush.pop();
         }
 
