@@ -3,15 +3,14 @@
 #include <errno.h>
 #include <memory>
 #include <mutex>
-#include <sys/time.h>
 #include <thread>
-#include <unistd.h>
 #include <unordered_map>
 
 #include "logging/logging.h"
 #include "hardware/motor.h"
 #include "hardware/raspi.h"
 #include "objects/objects.h"
+#include "system/system.h"
 
 #define PI 3.1415926535897
 
@@ -144,9 +143,9 @@ private:
             }
 
             pi->digital_write(pin_id, raspi::HIGH);
-            sleep(delay);
+            sys::sleep(delay);
             pi->digital_write(pin_id, raspi::LOW);
-            sleep(delay);
+            sys::sleep(delay);
 
             {
                 lock_guard<mutex> lock(data_lock);
@@ -183,12 +182,6 @@ private:
     double lockless_delay() const
     {
         return next - curr;
-    }
-
-    void sleep(double us) const
-    {
-        if ( usleep(us) < 0)
-            diag.error("usleep: {}", strerror(errno));
     }
 
     // Hardware
@@ -237,7 +230,7 @@ struct mock_motor
         // Things are changing, so we store our offsets for position and velocity
         calibrate( position() );
         velocity_offset = velocity();
-        last_velocity_calibration = now();
+        last_velocity_calibration = sys::now();
 
         accel = acceleration_;
     }
@@ -249,12 +242,12 @@ struct mock_motor
 
     double position() const
     {
-        return position_offset + velocity() * seconds_since(last_position_calibration);
+        return position_offset + velocity() * sys::seconds_since(last_position_calibration);
     }
 
     double velocity() const
     {
-        return velocity_offset + acceleration() * seconds_since(last_velocity_calibration);
+        return velocity_offset + acceleration() * sys::seconds_since(last_velocity_calibration);
     }
 
     double acceleration() const
@@ -265,28 +258,16 @@ struct mock_motor
     void calibrate(double new_position)
     {
         position_offset = new_position;
-        last_position_calibration = now();
+        last_position_calibration = sys::now();
     }
 
 private:
-    suseconds_t now() const
-    {
-        timeval tv;
-        gettimeofday(&tv, 0);
-        return tv.tv_usec;
-    }
-
-    double seconds_since(suseconds_t time) const
-    {
-        return double(now() - time) / 10e6;
-    }
-
     double accel;
     double position_offset;
     double velocity_offset;
 
-    suseconds_t last_position_calibration;
-    suseconds_t last_velocity_calibration;
+    sys::useconds_t last_position_calibration;
+    sys::useconds_t last_velocity_calibration;
 };
 
 struct motor_factory_impl

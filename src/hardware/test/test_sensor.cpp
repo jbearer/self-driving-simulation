@@ -1,11 +1,11 @@
 #include <cassert>
 #include <memory>
-#include <unistd.h>
 
 #include "hardware/pi_emulator.h"
 #include "hardware/sensor.h"
 #include "logging/logging.h"
 #include "objects/objects.h"
+#include "system/system.h"
 
 using namespace std;
 using namespace hardware;
@@ -52,17 +52,17 @@ int main()
     shared_ptr<sensor_emulator> sensur_emu(new sensor_emulator);
     pi->connect_device(sensor->pin(), sensur_emu);
     while ( !sensur_emu->connected() ) {
-        usleep(1e6);
+        sys::sleep(1e6);
     }
 
     // Push the button and see if the software responds accordingly
     sensur_emu->trigger();
     assert( sensor->is_triggered() );
-    usleep(1e6);
+    sys::sleep(1e6);
     assert( sensor->is_triggered() );
     sensur_emu->untrigger();
     assert( !sensor->is_triggered() );
-    usleep(1e6);
+    sys::sleep(1e6);
     assert( !sensor->is_triggered() );
 
     return 0;
