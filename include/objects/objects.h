@@ -37,10 +37,19 @@ namespace objects
     std::shared_ptr<itf_t> get();
 
     /**
-     * @brief      Substitute the mock implementation of a class or object for the real implementation.
-     * @detail     Subsequent calls to get<itf_t> or create<itf_t> will return an instance of the
-     *             mock implementation, rather than the real implementation. If no mock is
-     *             registered, the real implementation is still used.
+     * @brief      Substitute impl_t for the registered implementation of itf_t. Future calls to
+     *             get<itf_t> will return an instance of impl_t.
+     */
+    template<typename itf_t, typename impl_t>
+    void replace();
+
+    /**
+     * @brief      Substitute the registered mock implementation of am object for the real
+     *             implementation.
+     *
+     * @detail     Subsequent calls to get<itf_t> will return an instance of the mock
+     *             implementation, rather than the real implementation. If no mock is registered,
+     *             the real implementation is still used.
      */
     template<typename itf_t>
     void mock();

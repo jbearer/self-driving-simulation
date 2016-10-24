@@ -7,7 +7,8 @@ using namespace objects;
 enum impl_t
 {
     MOCK,
-    REAL
+    REAL,
+    REPLACEMENT
 };
 
 struct widget
@@ -33,6 +34,15 @@ struct mock_widget
     }
 };
 
+struct replacement_widget
+    : widget
+{
+    impl_t stat() const
+    {
+        return REPLACEMENT;
+    }
+};
+
 register_object(widget, widget_impl);
 register_mock_object(widget, mock_widget);
 
@@ -41,5 +51,7 @@ int main()
     assert( get<widget>()->stat() == REAL );
     mock<widget>();
     assert( get<widget>()->stat() == MOCK );
+    replace<widget, replacement_widget>();
+    assert( get<widget>()->stat() == REPLACEMENT );
     return 0;
 }

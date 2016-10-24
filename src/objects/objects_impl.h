@@ -27,6 +27,7 @@ namespace objects {
         void object_registration(std::string const & name, factory_t factory);
         void mock_object_registration(std::string const & name, factory_t factory);
         std::shared_ptr<object> get(std::string const & name);
+        void replace(std::string const & name, factory_t factory);
         void mock(std::string const & name);
     }
 
@@ -57,6 +58,17 @@ namespace objects {
     {
         auto untyped_ptr = impl::get( impl::name_of<itf_t>() );
         return std::shared_ptr<itf_t>( untyped_ptr, (itf_t *)( untyped_ptr.get() ) );
+    }
+
+    template<typename itf_t, typename impl_t>
+    void replace()
+    {
+        static_assert(std::is_base_of<itf_t, impl_t>::value,
+                      "replace: implementation type must inherit from interface type");
+
+        impl::replace( impl::name_of<itf_t>(), []() {
+            return std::shared_ptr<impl::object>( (impl::object *)(new impl_t) );
+        });
     }
 
     template<typename itf_t>
