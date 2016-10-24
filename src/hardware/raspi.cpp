@@ -1,4 +1,6 @@
+#include <atomic>
 #include <fcntl.h>
+#include <mutex>
 #include <sys/mman.h>
 #include <sys/time.h>
 #include <unordered_map>
@@ -8,6 +10,7 @@
 #include "hardware/raspi.h"
 #include "logging/logging.h"
 #include "objects/objects.h"
+#include "system/system.h"
 
 #define GPFSEL   ((volatile unsigned int *) (gpio + 0))
 #define GPSET    ((volatile unsigned int *) (gpio + 7))
@@ -200,6 +203,114 @@ shared_ptr<pi_emu> hardware::emulate_raspi()
 void input_handle_impl::write(raspi::digital_val_t value)
 {
      parent.inputs[pin] = value;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Oscilloscope emulator implementation
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+typedef oscilloscope::window_t window_t;
+typedef oscilloscope::window_callback_t window_callback_t;
+
+hardware::oscilloscope::oscilloscope(long sr_)
+    : sr(sr_)
+    , halt(false)
+    , sampler( bind(&hardware::oscilloscope::sample, this) )
+    , flusher( bind(&hardware::oscilloscope::flush, this) )
+{}
+
+void hardware::oscilloscope::fill_window(long size, window_callback_t callback)
+{
+    lock_guard<mutex> lock(requests_lock);
+    size_t num_samples = (size * sr) * 1e-6;
+    window_t window;
+    window.reserve(num_samples);
+    requested_windows.emplace_back(move(window), callback);
+}
+
+long hardware::oscilloscope::sampling_rate() const
+{
+    return sr;
+}
+
+void hardware::oscilloscope::write(raspi::digital_val_t new_value)
+{
+    atomic_store(&value, new_value);
+}
+
+void hardware::oscilloscope::sample()
+{
+    while ( !atomic_load(&halt) ) {
+        vector<window_pair_t> newly_filled_windows;
+
+        {
+            lock_guard<mutex> lock(requests_lock);
+
+            // Take a sample
+            raspi::digital_val_t sample = atomic_load(&value);
+
+            // Update the requested windows
+            auto i = requested_windows.begin();
+            while ( i != requested_windows.end() ) {
+                auto & window_pair = *i;
+                window_pair.first.push_back(sample);
+                if ( window_pair.first.size() == window_pair.first.capacity() ) {
+                    // The window has been filled and is ready to be returned to the caller
+                    newly_filled_windows.push_back( move(window_pair) );
+                    i = requested_windows.erase(i);
+                } else {
+                    ++i;
+                }
+            }
+        }
+        {
+            lock_guard<mutex> lock(filled_lock);
+
+            // Queue the new windows to be flushed
+            for (auto const & window_pair : newly_filled_windows) {
+                filled_windows.push( move(window_pair) );
+            }
+        }
+
+        filled_signal.notify_one();
+
+        sys::sleep(double(1e6) / sr);
+    }
+}
+
+void hardware::oscilloscope::flush()
+{
+    while ( !atomic_load(&halt) ) {
+        queue<window_pair_t> to_flush;
+
+        // Wait until there are windows to be flushed
+        unique_lock<mutex> lock(filled_lock);
+        filled_signal.wait(lock, [this, &to_flush]() {
+            // Take the windows off the queue, but don't flush them yet; in case the callbacks are
+            // expensive we wait until we're out of the lock
+            while ( !filled_windows.empty() ) {
+                to_flush.push( move(filled_windows.front() ) );
+                filled_windows.pop();
+            }
+            return !to_flush.empty();
+        });
+
+        // Now we're done with the lock, we can safely call expensive callbacks without blocking
+        // the sampling thread
+        while ( !to_flush.empty() ) {
+            auto & window_pair = to_flush.front();
+            window_pair.second( move(window_pair.first) );
+            to_flush.pop();
+        }
+
+    }
+}
+
+hardware::oscilloscope::~oscilloscope()
+{
+    atomic_store(&halt, true);
+    sampler.join();
+    flusher.join();
 }
 
 register_object(raspi, raspi_impl);
