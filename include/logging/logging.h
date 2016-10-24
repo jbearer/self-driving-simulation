@@ -16,6 +16,9 @@ namespace logging
     inline void set_level(log_level level)
     {
         spdlog::set_level(level);
+        spdlog::apply_all([level](std::shared_ptr<spdlog::logger> l) {
+            l->flush_on( l->level() );
+        });
     }
 
     /**
@@ -31,7 +34,8 @@ namespace logging
         logger(std::string const & name)
             : inner( spdlog::get(name) )
         {
-            inner = inner ? inner : spdlog::basic_logger_mt(name, LOG_FILE, true);
+            inner = inner ? inner : spdlog::basic_logger_mt(name, LOG_FILE, false);
+            inner->flush_on( inner->level() );
         }
 
         template <typename... args_t> void trace(char const * fmt, const args_t&... args) {
@@ -69,6 +73,12 @@ namespace logging
             msg.append(fmt);
             inner->critical(msg.c_str(), args...);
             std::abort();
+        }
+
+        void set_level(log_level level)
+        {
+            inner->set_level(level);
+            inner->flush_on(level);
         }
 
     private:
