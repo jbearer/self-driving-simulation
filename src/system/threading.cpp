@@ -21,6 +21,26 @@ using namespace sys;
 struct loop_thread
         : sys::thread
 {
+    typedef function<void(sys::useconds_t)> delay_func_t;
+
+    // RAII wrapper to force a function call to take a certain amount of time
+    struct enforce_delay
+    {
+        explicit enforce_delay(delay_func_t & delay_)
+            : started( sys::now() )
+            , delay(delay_)
+        {}
+
+        ~enforce_delay()
+        {
+            delay(started);
+        }
+
+    private:
+        sys::useconds_t started;
+        delay_func_t &  delay;
+    };
+
     loop_thread(string const & name_, function<void()> const & main_, sys::useconds_t delay_time)
         : diag("system.threading", name_)
         , work(main_)
@@ -73,9 +93,8 @@ private:
     void main()
     {
         while ( !atomic_load(&halt) ) {
-            sys::useconds_t started = sys::now();
+            enforce_delay d(delay);
             work();
-            delay(started);
         }
     }
 
@@ -85,7 +104,7 @@ private:
     atomic<bool>                halt;
 
     // Accept a start time and wait until the time elapsed since start is 1/frequency.
-    function<void(sys::useconds_t)>  delay;
+    delay_func_t                delay;
 };
 
 unique_ptr<sys::thread> sys::loop(
