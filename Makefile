@@ -11,7 +11,7 @@ OBJECTS_HEADERS = include/objects/objects.h src/objects/objects_impl.h $(LOGGING
 
 HARDWARE_HEADERS = $(wildcard include/hardware/*.h) $(OBJECTS_HEADERS)
 
-SYSTEM_HEADERS = include/system/system.h $(LOGGING_HEADERS)
+SYSTEM_HEADERS = $(wildcard include/system/*.h) $(LOGGING_HEADERS)
 
 all: $(TARGETS)
 
@@ -43,6 +43,13 @@ raspi.o: src/hardware/raspi.cpp $(HARDWARE_HEADERS) $(OBJECTS_HEADERS) $(LOGGING
 	$(CXX) $(CXX_FLAGS) $<
 
 ####################################################################################################
+# SYSTEM OBJECTS
+####################################################################################################
+
+threading.o: src/system/threading.cpp $(LOGGING_HEADERS) $(SYSTEM_HEADERS)
+	$(CXX) $(CXX_FLAGS) $<
+
+####################################################################################################
 # SIMULATION OBJECTS
 ####################################################################################################
 
@@ -67,37 +74,37 @@ test_objects: test_objects.o objects.o
 test_objects.o: src/objects/test/test_objects.cpp $(OBJECTS_HEADERS) $(LOGGING_HEADERS)
 	$(CXX) $(CXX_FLAGS) $<
 
-test_motor: test_motor.o motor.o objects.o raspi.o
+test_motor: test_motor.o motor.o objects.o raspi.o threading.o
 	$(CXX) -o $@ $^ $(LINK_FLAGS)
 
 test_motor.o: src/hardware/test/test_motor.cpp $(HARDWARE_HEADERS) $(OBJECTS_HEADERS) $(LOGGING_HEADERS) $(SYSTEM_HEADERS)
 	$(CXX) $(CXX_FLAGS) $<
 
-test_motor_simple: test_motor_simple.o motor.o objects.o raspi.o
+test_motor_simple: test_motor_simple.o motor.o objects.o raspi.o threading.o
 	$(CXX) -o $@ $^ $(LINK_FLAGS)
 
 test_motor_simple.o: src/hardware/test/test_motor_simple.cpp $(HARDWARE_HEADERS) $(OBJECTS_HEADERS) $(LOGGING_HEADERS) $(SYSTEM_HEADERS)
 	$(CXX) $(CXX_FLAGS) $<
 
-test_button: test_button.o button.o objects.o raspi.o
+test_button: test_button.o button.o objects.o raspi.o threading.o
 	$(CXX) -o $@ $^ $(LINK_FLAGS)
 
 test_button.o: src/hardware/test/test_button.cpp $(HARDWARE_HEADERS) $(OBJECTS_HEADERS) $(LOGGING_HEADERS) $(SYSTEM_HEADERS)
 	$(CXX) $(CXX_FLAGS) $<
 
-test_sensor: test_sensor.o sensor.o objects.o raspi.o
+test_sensor: test_sensor.o sensor.o objects.o raspi.o threading.o
 	$(CXX) -o $@ $^ $(LINK_FLAGS)
 
 test_sensor.o: src/hardware/test/test_sensor.cpp $(HARDWARE_HEADERS) $(OBJECTS_HEADERS) $(LOGGING_HEADERS) $(SYSTEM_HEADERS)
 	$(CXX) $(CXX_FLAGS) $<
 
-test_oscilloscope: test_oscilloscope.o objects.o raspi.o
+test_oscilloscope: test_oscilloscope.o objects.o raspi.o threading.o
 	$(CXX) -o $@ $^ $(LINK_FLAGS)
 
 test_oscilloscope.o: src/hardware/test/test_oscilloscope.cpp $(HARDWARE_HEADERS) $(OBJECTS_HEADERS) $(LOGGING_HEADERS) $(SYSTEM_HEADERS)
 	$(CXX) $(CXX_FLAGS) $<
 
-test_grid: test_grid.o grid.o car.o objects.o intersection.o motor.o raspi.o
+test_grid: test_grid.o grid.o car.o objects.o intersection.o motor.o raspi.o threading.o
 	$(CXX) -o $@ $^ $(LINK_FLAGS)
 
 test_grid.o: src/simulation/test/test_grid.cpp include/simulation/grid.h $(OBJECTS_HEADERS) $(LOGGING_HEADERS)

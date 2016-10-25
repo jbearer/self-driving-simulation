@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "hardware/raspi.h"
+#include "system/threading.h"
 
 namespace hardware {
 
@@ -92,8 +93,6 @@ namespace hardware {
         // output_device
         void write(raspi::digital_val_t value);
 
-        ~oscilloscope();
-
     private:
         // Sample from the raspberry pi and fill out window requests
         void sample();
@@ -157,13 +156,10 @@ namespace hardware {
         // The sampling rate
         long                                sr;
 
-        // Used to signal threads to stop
-        std::atomic<bool>                   halt;
-
         // Sample and fill requested windows
-        std::thread                         sampler;
+        std::unique_ptr<sys::thread>        sampler;
 
         // Return filled windows to clients
-        std::thread                         flusher;
+        std::unique_ptr<sys::thread>        flusher;
     };
 }

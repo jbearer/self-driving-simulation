@@ -13,7 +13,7 @@ using namespace hardware;
 
 static logging::logger diag("hardware/test.oscilloscope");
 
-static const long           SAMPLING_RATE = 2e6;
+static const long           SAMPLING_RATE = 1e4;
 static const long           WINDOW_SIZE   = 2000;
 static const size_t         NUM_SAMPLES   = SAMPLING_RATE * WINDOW_SIZE * 1e-6;
 static const int            PIN           = 0;
