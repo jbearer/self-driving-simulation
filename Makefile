@@ -109,3 +109,6 @@ test_grid: test_grid.o grid.o car.o objects.o intersection.o motor.o raspi.o thr
 
 test_grid.o: src/simulation/test/test_grid.cpp include/simulation/grid.h $(OBJECTS_HEADERS) $(LOGGING_HEADERS)
 	$(CXX) $(CXX_FLAGS) $<
+
+test.o: src/testing/test.cpp include/testing/testing.h
+	$(CXX) $(CXX_FLAGS) $<
