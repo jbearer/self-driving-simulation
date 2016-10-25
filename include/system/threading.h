@@ -29,4 +29,15 @@ namespace sys {
      */
     std::unique_ptr<thread> loop(
         std::string const & name, std::function<void()> const & main, useconds_t delay = 0);
+
+    /**
+     * @brief      Execute the given function and then return after a specified elapsed time.
+     *             If more than the specified time elapses, a warning is logged, but the function
+     *             returns normally.
+     *
+     * @param      name       An identifier used by the logger.
+     * @param[in]  duration   The duration in microseconds.
+     * @param[in]  func       The function to execute.
+     */
+    void timed_exec(std::string const & name, useconds_t duration, std::function<void()> func);
 }
