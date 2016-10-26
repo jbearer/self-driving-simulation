@@ -8,12 +8,14 @@
 #include "objects/objects.h"
 #include "system/time.h"
 
+#include "testing.h"
+
 using namespace std;
 using namespace hardware;
 
 static logging::logger diag("test/motor");
 
-int main()
+test_case(hardware.motor)
 {
     diag.info("Initializing motors");
     vector<int> tracks(6);
@@ -43,6 +45,4 @@ int main()
     sys::sleep(2e6);
 
     diag.info("Stopping.");
-
-    return 0;
 }

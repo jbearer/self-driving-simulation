@@ -7,6 +7,8 @@
 #include "objects/objects.h"
 #include "system/system.h"
 
+#include "testing.h"
+
 using namespace std;
 using namespace hardware;
 
@@ -42,28 +44,39 @@ private:
     unique_ptr<pi_emu::input_handle> handle;
 };
 
-int main()
+void setup(shared_ptr<sensor_emulator> & sensor_emu, unique_ptr<sensor> & sensor)
 {
     auto pi = emulate_raspi();
     auto factory = objects::get<sensor_factory>();
-    auto sensor = factory->create(0);
+    sensor = move( factory->create(0) );
 
     // Connect a sensor to the emulator
-    shared_ptr<sensor_emulator> sensur_emu(new sensor_emulator);
-    pi->connect_device(sensor->pin(), sensur_emu);
-    while ( !sensur_emu->connected() ) {
+    sensor_emu.reset(new sensor_emulator);
+    pi->connect_device(sensor->pin(), sensor_emu);
+    while ( !sensor_emu->connected() ) {
         sys::sleep(1e6);
     }
+}
 
-    // Push the button and see if the software responds accordingly
-    sensur_emu->trigger();
-    assert( sensor->is_triggered() );
-    sys::sleep(1e6);
-    assert( sensor->is_triggered() );
-    sensur_emu->untrigger();
-    assert( !sensor->is_triggered() );
-    sys::sleep(1e6);
-    assert( !sensor->is_triggered() );
+test_case(hardware.sensor.trigger)
+{
+    shared_ptr<sensor_emulator> sensor_emu;
+    unique_ptr<sensor>          sensor;
+    setup(sensor_emu, sensor);
 
-    return 0;
+    assert( !sensor->is_triggered() );
+    sensor_emu->trigger();
+    assert( sensor->is_triggered() );
+}
+
+test_case(hardware.sensor.untrigger)
+{
+    shared_ptr<sensor_emulator> sensor_emu;
+    unique_ptr<sensor>          sensor;
+    setup(sensor_emu, sensor);
+
+    sensor_emu->trigger();
+    assert( sensor->is_triggered() );
+    sensor_emu->untrigger();
+    assert( !sensor->is_triggered() );
 }

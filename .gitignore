@@ -1,3 +1,9 @@
 logs/**
 tpc/**
 *.o
+**/CMakeFiles/**
+**.cmake
+**/CMakeCache.txt
+**/Makefile
+bin/**
+lib/**

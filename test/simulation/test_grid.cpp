@@ -1,7 +1,9 @@
 #include "objects/objects.h"
 #include "simulation/grid.h"
 
-int main()
+#include "testing.h"
+
+test_case(simulation.grid)
 {
 	objects::mock<motor_factory>();
 
@@ -75,7 +77,5 @@ int main()
 	} while (std::next_permutation(autos.begin(), autos.end()));
 
 	// max_acc_s is bound to the highest sum of accelerations;
-
-	return 0;
 }
 

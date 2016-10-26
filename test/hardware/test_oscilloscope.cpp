@@ -8,6 +8,8 @@
 #include "logging/logging.h"
 #include "system/system.h"
 
+#include "testing.h"
+
 using namespace std;
 using namespace hardware;
 
@@ -84,7 +86,7 @@ private:
     sys::useconds_t                     requested;
 };
 
-int main()
+test_case(hardware.emulator.oscilloscope)
 {
     logging::set_level(logging::log_level::trace);
 
@@ -114,6 +116,4 @@ int main()
     diag.info("Activating trigger.");
     pi->digital_write(PIN, raspi::LOW);
     trigger.wait_for(5000);
-
-    return 0;
 }

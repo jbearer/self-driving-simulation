@@ -7,6 +7,8 @@
 #include "objects/objects.h"
 #include "system/system.h"
 
+#include "testing.h"
+
 using namespace std;
 using namespace hardware;
 
@@ -42,7 +44,7 @@ private:
     unique_ptr<pi_emu::input_handle> handle;
 };
 
-int main()
+test_case(hardware.button)
 {
     auto pi = emulate_raspi();
     auto factory = objects::get<button_factory>();
@@ -64,6 +66,4 @@ int main()
     assert( !butt->is_pushed() );
     sys::sleep(1e6);
     assert( !butt->is_pushed() );
-
-    return 0;
 }

@@ -2,6 +2,8 @@
 
 #include "objects/objects.h"
 
+#include "testing.h"
+
 using namespace objects;
 
 enum impl_t
@@ -46,12 +48,11 @@ struct replacement_widget
 register_object(widget, widget_impl);
 register_mock_object(widget, mock_widget);
 
-int main()
+test_case(objects)
 {
     assert( get<widget>()->stat() == REAL );
     mock<widget>();
     assert( get<widget>()->stat() == MOCK );
     replace<widget, replacement_widget>();
     assert( get<widget>()->stat() == REPLACEMENT );
-    return 0;
 }

@@ -4,7 +4,7 @@
 #include <unordered_map>
 
 #include "logging/logging.h"
-#include "testing/testing.h"
+#include "testing.h"
 
 using namespace std;
 using namespace testing;
