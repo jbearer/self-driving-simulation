@@ -3,38 +3,10 @@
 #include "objects/objects.h"
 
 #include "testing.h"
+#include "widget.h"
 
 using namespace objects;
-
-enum impl_t
-{
-    MOCK,
-    REAL,
-    REPLACEMENT
-};
-
-struct widget
-{
-    virtual impl_t stat() const = 0;
-};
-
-struct widget_impl
-    : widget
-{
-    impl_t stat() const
-    {
-        return REAL;
-    }
-};
-
-struct mock_widget
-    : widget
-{
-    impl_t stat() const
-    {
-        return MOCK;
-    }
-};
+using namespace testing::objects;
 
 struct replacement_widget
     : widget
@@ -45,14 +17,41 @@ struct replacement_widget
     }
 };
 
-register_object(widget, widget_impl);
-register_mock_object(widget, mock_widget);
+test_case(objects.real)
+{
+    assert( get<widget>()->stat() == REAL );
+}
 
-test_case(objects)
+test_case(objects.mock)
+{
+    mock<widget>();
+    assert( get<widget>()->stat() == MOCK );
+}
+
+test_case(objects.mock.over)
 {
     assert( get<widget>()->stat() == REAL );
     mock<widget>();
     assert( get<widget>()->stat() == MOCK );
+}
+
+test_case(objects.replace)
+{
     replace<widget, replacement_widget>();
     assert( get<widget>()->stat() == REPLACEMENT );
+}
+
+test_case(objects.replace.over)
+{
+    assert( get<widget>()->stat() == REAL );
+    replace<widget, replacement_widget>();
+    assert( get<widget>()->stat() == REPLACEMENT );
+}
+
+test_case(objects.reset)
+{
+    mock<widget>();
+    assert( get<widget>()->stat() == MOCK );
+    reset();
+    assert( get<widget>()->stat() == REAL );
 }

@@ -53,6 +53,15 @@ namespace objects
      */
     template<typename itf_t>
     void mock();
+
+    /**
+     * @brief      Detach all instances of objects and replace all mocked out objects with their
+     *             original implementations.
+     *
+     * @warning    Continuing to use references to previously instantiated
+     *             instances of objects is undefined behavior.
+     */
+    void reset();
 }
 
 #define register_object(itf_t, impl_t) static objects::object_registration<itf_t, impl_t> itf_t##_registation

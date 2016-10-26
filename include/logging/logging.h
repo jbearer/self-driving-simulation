@@ -7,11 +7,16 @@
 #include "spdlog/common.h"
 #include "spdlog/spdlog.h"
 
+#include "config.h"
+
 namespace logging
 {
     typedef spdlog::level::level_enum log_level;
 
-    const spdlog::filename_t LOG_FILE = "logs/main.log";
+    inline spdlog::filename_t log_file()
+    {
+        return config::build_tree("/logs/main.log");
+    }
 
     inline void set_level(log_level level)
     {
@@ -27,7 +32,7 @@ namespace logging
         logger_impl(std::string const & name)
             : inner( spdlog::get(name) )
         {
-            inner = inner ? inner : spdlog::basic_logger_mt(name, LOG_FILE, false);
+            inner = inner ? inner : spdlog::basic_logger_mt(name, log_file(), false);
             inner->flush_on( inner->level() );
         }
 

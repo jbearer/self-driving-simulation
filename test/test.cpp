@@ -4,12 +4,13 @@
 #include <unordered_map>
 
 #include "logging/logging.h"
+#include "objects/objects.h"
 #include "testing.h"
 
 using namespace std;
 using namespace testing;
 
-logging::logger & diag() {
+static logging::logger & diag() {
     static logging::logger * diag_ = new logging::logger("testing");
     return *diag_;
 }
@@ -104,7 +105,7 @@ private:
     unordered_map<string, unique_ptr<test_trie> >   children;
 };
 
-test_trie & tests()
+static test_trie & tests()
 {
     static test_trie * test_ = new test_trie;
     return *test_;
@@ -120,7 +121,7 @@ testing::test_case_registration::test_case_registration(char const * name, test_
     }
 }
 
-int run_tests(string const & key)
+static int run_tests(string const & key)
 {
     auto test_cases = tests().find(key);
 
@@ -132,12 +133,13 @@ int run_tests(string const & key)
         diag().info("Begin {}.", test.name);
         test.run();
         diag().info("Passed {}.", test.name);
+        objects::reset();
     }
 
     return test_cases.size();
 }
 
-int run_all_tests()
+static int run_all_tests()
 {
     return run_tests("");
 }

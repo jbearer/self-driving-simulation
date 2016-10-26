@@ -1,0 +1,33 @@
+/**
+ * This file used as input to CMake to generate a config file with information about the build
+ * configuration, the source and build tree paths, etc.
+ */
+
+#pragma once
+
+namespace config {
+    inline std::string append_paths(std::string path1, std::string const & path2)
+    {
+        if (path1[path1.size() - 1] != '/' && path2[0] != '/') {
+            path1.push_back('/');
+        }
+        path1.append(path2);
+        return path1;
+    }
+
+    /**
+     * @brief      Obtain an absolute path from a path relative to the root of the build tree.
+     */
+    inline std::string build_tree(std::string const & relative_path)
+    {
+        return append_paths("@PROJECT_BINARY_DIR@", relative_path);
+    }
+
+    /**
+     * @brief      Obtain an absolute path from a path relative to the root of the source tree.
+     */
+    inline std::string source_tree(std::string const & relative_path)
+    {
+        return append_paths("@PROJECT_SOURCE_DIR@", relative_path);
+    }
+}
