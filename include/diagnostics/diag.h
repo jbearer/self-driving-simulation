@@ -26,13 +26,15 @@ namespace diagnostics {
          * @param[in]  args  The arguments to be passed to the formatter
          */
         template<typename... args_t>
-        inline void assert_failed(char const * cond,
+        inline void assert_failed(char const *,
                            char const * file,
                            int line,
                            std::string const & msg,
                            const args_t&... args)
         {
-            diag.fail("Assertion failed ({}:{}): {}", file, line, msg, args...);
+            std::string fmt = "Assertion failed ({}:{}): ";
+            fmt.append(msg);
+            diag.fail(fmt.c_str(), file, line, args...);
         }
     }
 }
