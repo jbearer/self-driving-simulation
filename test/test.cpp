@@ -160,14 +160,28 @@ int main(int argc, char ** argv)
 {
     int num_tests = 0;
 
+    vector<string>  tests_to_exclude;
     vector<string>  tests_to_run;
 
     for (int i = 1; i < argc; ++i) {
         if (argv[i][0] == '^') {
-            tests().erase(argv[i] + 1);
+            tests_to_exclude.push_back(argv[i] + 1);
         } else {
             tests_to_run.push_back(argv[i]);
         }
+    }
+
+    // Before we start erasing the excluded tests, we make sure everything that the user typed in is
+    // actually a registered test. This involves doing a bit of extra work, but this isn't really
+    // performance sensitive and it let's us give nice error messages.
+    for (auto const & key : tests_to_run) {
+        diag_assert(!tests().find(key).empty(), "No test case matching {}.", key);
+    }
+
+    // Now remove excluded tests from the trie.
+    for (auto const & key : tests_to_exclude) {
+        diag_assert(!tests().find(key).empty(), "No test case matching {}.", key);
+        tests().erase(key);
     }
 
     if ( tests_to_run.empty() ) {
