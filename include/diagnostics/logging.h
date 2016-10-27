@@ -1,12 +1,14 @@
 #pragma once
 
 #include <cstdlib>
+#include <fstream>
 #include <memory>
 #include <string>
 
 #include "spdlog/common.h"
 #include "spdlog/spdlog.h"
 
+#include "system/system.h"
 #include "config.h"
 
 namespace diagnostics
@@ -73,6 +75,11 @@ namespace diagnostics
         logger_impl(std::string const & name)
             : inner( spdlog::get(name) )
         {
+            // The first time a logger is instantiated, we want to truncate the log file
+            sys::if_first< logger_impl<void> >([]() {
+                std::ofstream(log_file(), std::ios_base::trunc);
+            });
+
             inner = inner ? inner : spdlog::basic_logger_mt(name, log_file(), false);
             inner->flush_on( inner->level() );
         }
