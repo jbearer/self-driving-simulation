@@ -30,4 +30,6 @@ namespace config {
     {
         return append_paths("@PROJECT_SOURCE_DIR@", relative_path);
     }
+
+#define LOG_LEVEL @LOG_LEVEL@
 }

@@ -1,12 +1,13 @@
 #include <algorithm>
 #include <numeric>
 
+#include "diagnostics/diag.h"
 #include "simulation/car.h"
 #include "simulation/intersection.h"
-#include "logging/logging.h"
+#include "diagnostics/diag.h"
 #include "objects/objects.h"
 
-using namespace logging;
+using namespace diagnostics;
 
 static logger diag("car");
 

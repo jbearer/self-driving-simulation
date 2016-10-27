@@ -10,7 +10,7 @@
 
 #include "hardware/pi_emulator.h"
 #include "hardware/raspi.h"
-#include "logging/logging.h"
+#include "diagnostics/diag.h"
 #include "objects/objects.h"
 #include "system/system.h"
 
@@ -26,7 +26,7 @@
 using namespace std;
 using namespace hardware;
 
-static logging::logger diag("hardware/raspi");
+static diagnostics::logger diag("hardware/raspi");
 
 struct raspi_impl
     : raspi

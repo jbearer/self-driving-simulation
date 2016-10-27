@@ -3,7 +3,7 @@
 #include <unordered_map>
 #include <unordered_set>
 
-#include "logging/logging.h"
+#include "diagnostics/diag.h"
 #include "objects/objects.h"
 
 using namespace std;
@@ -17,9 +17,9 @@ typedef unordered_map< string, shared_ptr<object> > instance_map_t;
  * We have to hide all the static containers in functions to avoid static initialization order fiasco.
  */
 
-static logging::logger & diag()
+static diagnostics::logger & diag()
 {
-    static logging::logger * diag_ = new logging::logger("objects");
+    static diagnostics::logger * diag_ = new diagnostics::logger("objects");
     return *diag_;
 }
 

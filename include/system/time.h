@@ -3,13 +3,13 @@
 #include <sys/time.h>
 #include <unistd.h>
 
-#include "logging/logging.h"
+#include "diagnostics/diag.h"
 
 namespace sys {
 
     typedef suseconds_t useconds_t;
 
-    static logging::logger diag("system");
+    static diagnostics::logger diag("system");
 
     inline void sleep(double us)
     {

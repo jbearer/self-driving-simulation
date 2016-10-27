@@ -3,7 +3,7 @@
 
 #include "hardware/button.h"
 #include "hardware/pi_emulator.h"
-#include "logging/logging.h"
+#include "diagnostics/diag.h"
 #include "objects/objects.h"
 #include "system/system.h"
 
@@ -12,7 +12,7 @@
 using namespace std;
 using namespace hardware;
 
-static logging::logger diag("test/button");
+static diagnostics::logger diag("test/button");
 
 struct button_emulator
     : input_device

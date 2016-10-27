@@ -5,7 +5,7 @@
 #include <string>
 #include <type_traits>
 
-#include "logging/logging.h"
+#include "diagnostics/diag.h"
 
 namespace objects {
 

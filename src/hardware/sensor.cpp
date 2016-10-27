@@ -5,7 +5,7 @@
 #include <string>
 #include <thread>
 
-#include "logging/logging.h"
+#include "diagnostics/diag.h"
 #include "hardware/raspi.h"
 #include "hardware/sensor.h"
 #include "objects/objects.h"
@@ -13,7 +13,7 @@
 using namespace std;
 using namespace hardware;
 
-static logging::logger diag("hardware/sensor");
+static diagnostics::logger diag("hardware/sensor");
 
 // Mapping from track_id_s to pins
 static unordered_map<int, int> pins = {

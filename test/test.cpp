@@ -3,15 +3,15 @@
 #include <string>
 #include <unordered_map>
 
-#include "logging/logging.h"
+#include "diagnostics/diag.h"
 #include "objects/objects.h"
 #include "testing.h"
 
 using namespace std;
 using namespace testing;
 
-static logging::logger & diag() {
-    static logging::logger * diag_ = new logging::logger("testing");
+static diagnostics::logger & diag() {
+    static diagnostics::logger * diag_ = new diagnostics::logger("testing");
     return *diag_;
 }
 

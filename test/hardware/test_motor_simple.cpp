@@ -1,7 +1,7 @@
 #include <memory>
 
 #include "hardware/motor.h"
-#include "logging/logging.h"
+#include "diagnostics/diag.h"
 #include "objects/objects.h"
 #include "system/time.h"
 
@@ -10,11 +10,11 @@
 using namespace std;
 using namespace hardware;
 
-static logging::logger diag("test/motor.simple");
+static diagnostics::logger diag("test/motor.simple");
 
 test_case(hardware.motor.simple)
 {
-    logging::set_level(logging::log_level::trace);
+    auto l = diagnostics::set_log_level(diagnostics::log_level::trace);
 
     diag.info("Initializing motor");
     auto factory = objects::get<motor_factory>();

@@ -5,7 +5,7 @@
 #include <mutex>
 
 #include "hardware/pi_emulator.h"
-#include "logging/logging.h"
+#include "diagnostics/diag.h"
 #include "system/system.h"
 
 #include "testing.h"
@@ -13,7 +13,7 @@
 using namespace std;
 using namespace hardware;
 
-static logging::logger diag("hardware/test.oscilloscope");
+static diagnostics::logger diag("hardware/test.oscilloscope");
 
 static const long           SAMPLING_RATE = 1e4;
 static const long           WINDOW_SIZE   = 2000;
@@ -88,7 +88,7 @@ private:
 
 test_case(hardware.emulator.oscilloscope)
 {
-    logging::set_level(logging::log_level::trace);
+    auto l = diagnostics::set_log_level(diagnostics::log_level::trace);
 
     auto pi = emulate_raspi();
     pi->pin_mode(PIN, raspi::OUTPUT);

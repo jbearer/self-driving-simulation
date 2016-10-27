@@ -9,7 +9,7 @@
 
 #include "config.h"
 
-namespace logging
+namespace diagnostics
 {
     typedef spdlog::level::level_enum log_level;
 
@@ -18,12 +18,53 @@ namespace logging
         return config::build_tree("/logs/main.log");
     }
 
-    inline void set_level(log_level level)
+    /**
+     * @brief      RAII based method for setting the global log level while in a particular scope.
+     */
+    struct level_setter
     {
-        spdlog::set_level(level);
-        spdlog::apply_all([level](std::shared_ptr<spdlog::logger> l) {
-            l->flush_on( l->level() );
-        });
+        level_setter(log_level level_);
+
+        ~level_setter();
+
+        log_level level() const
+        {
+            return lvl;
+        }
+
+    private:
+        static void set(log_level level)
+        {
+            spdlog::set_level(level);
+            spdlog::apply_all([level](std::shared_ptr<spdlog::logger> l) {
+                l->flush_on( l->level() );
+            });
+        }
+
+        log_level       lvl;
+        level_setter *  previous;
+    };
+
+    // Initialize the log level from the config
+    static level_setter base_log_level(log_level::LOG_LEVEL);
+
+    inline level_setter::level_setter(log_level level_)
+        : lvl(level_)
+        , previous(&base_log_level)
+    {
+        set(lvl);
+        base_log_level = *this;
+    }
+
+    inline level_setter::~level_setter()
+    {
+        set( previous->level() );
+        base_log_level = *previous;
+    }
+
+    inline level_setter set_log_level(log_level level)
+    {
+        return level_setter(level);
     }
 
     template<typename impl_t>

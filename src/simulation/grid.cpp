@@ -2,9 +2,9 @@
 
 #include "simulation/grid.h"
 
-#include "logging/logging.h"
+#include "diagnostics/diag.h"
 
-using namespace logging;
+using namespace diagnostics;
 
 static logger diag("grid");
 

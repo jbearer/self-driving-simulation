@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "hardware/motor.h"
-#include "logging/logging.h"
+#include "diagnostics/diag.h"
 #include "objects/objects.h"
 #include "system/time.h"
 
@@ -13,7 +13,7 @@
 using namespace std;
 using namespace hardware;
 
-static logging::logger diag("test/motor");
+static diagnostics::logger diag("test/motor");
 
 test_case(hardware.motor)
 {

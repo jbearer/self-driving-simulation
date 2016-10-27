@@ -1,9 +1,9 @@
-#include <cassert>
 #include <memory>
 
+#include "diagnostics/diag.h"
 #include "hardware/pi_emulator.h"
 #include "hardware/sensor.h"
-#include "logging/logging.h"
+#include "diagnostics/diag.h"
 #include "objects/objects.h"
 #include "system/system.h"
 
@@ -12,7 +12,7 @@
 using namespace std;
 using namespace hardware;
 
-static logging::logger diag("test/sensor");
+static diagnostics::logger diag("test/sensor");
 
 struct sensor_emulator
     : input_device
@@ -64,9 +64,9 @@ test_case(hardware.sensor.trigger)
     unique_ptr<sensor>          sensor;
     setup(sensor_emu, sensor);
 
-    assert( !sensor->is_triggered() );
+    diag_assert( !sensor->is_triggered() );
     sensor_emu->trigger();
-    assert( sensor->is_triggered() );
+    diag_assert( sensor->is_triggered() );
 }
 
 test_case(hardware.sensor.untrigger)
@@ -76,7 +76,7 @@ test_case(hardware.sensor.untrigger)
     setup(sensor_emu, sensor);
 
     sensor_emu->trigger();
-    assert( sensor->is_triggered() );
+    diag_assert( sensor->is_triggered() );
     sensor_emu->untrigger();
-    assert( !sensor->is_triggered() );
+    diag_assert( !sensor->is_triggered() );
 }

@@ -3,7 +3,7 @@
 #include <string>
 #include <thread>
 
-#include "logging/logging.h"
+#include "diagnostics/diag.h"
 #include "system/threading.h"
 #include "system/time.h"
 
@@ -79,7 +79,7 @@ private:
         }
     }
 
-    logging::prefix_logger      diag;
+    diagnostics::prefix_logger      diag;
     function<void()>            work;
     std::thread                 inner;
     atomic<bool>                halt;
