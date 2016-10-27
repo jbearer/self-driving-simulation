@@ -1,7 +1,9 @@
+#include <algorithm>
 #include <memory>
 #include <sstream>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 #include "diagnostics/diag.h"
 #include "objects/objects.h"
@@ -90,6 +92,20 @@ struct test_trie
         return results;
     }
 
+    void erase(string const & key)
+    {
+        if ( key.empty() ) {
+            // Matches everything from here down
+            matching_test = false;
+            children.clear();
+        } else {
+            auto tokens = extract_prefix(key);
+            if (children[tokens.first]) {
+                children[tokens.first]->erase(tokens.second);
+            }
+        }
+    }
+
 private:
     static pair<string, string> extract_prefix(string const & key)
     {
@@ -121,40 +137,47 @@ testing::test_case_registration::test_case_registration(char const * name, test_
     }
 }
 
-static int run_tests(string const & key)
+static int run_tests(vector<string> const & keys)
 {
-    auto test_cases = tests().find(key);
+    int num_tests = 0;
 
-    if ( test_cases.empty() ) {
-        diag().fail("No test cases matching {}.", key);
+    for (auto const & key : keys) {
+        auto test_cases = tests().find(key);
+
+        for (auto const & test : test_cases) {
+            diag().info("Begin {}.", test.name);
+            test.run();
+            diag().info("Passed {}.", test.name);
+            objects::reset();
+            ++num_tests;
+        }
     }
 
-    for (auto const & test : test_cases) {
-        diag().info("Begin {}.", test.name);
-        test.run();
-        diag().info("Passed {}.", test.name);
-        objects::reset();
-    }
-
-    return test_cases.size();
-}
-
-static int run_all_tests()
-{
-    return run_tests("");
+    return num_tests;
 }
 
 int main(int argc, char ** argv)
 {
     int num_tests = 0;
-    if (argc == 1) {
-        num_tests = run_all_tests();
-    } else {
-        for (int i = 1; i < argc; ++i) {
-            num_tests += run_tests( string(argv[i]) );
+
+    vector<string>  tests_to_run;
+
+    for (int i = 1; i < argc; ++i) {
+        if (argv[i][0] == '^') {
+            tests().erase(argv[i] + 1);
+        } else {
+            tests_to_run.push_back(argv[i]);
         }
     }
 
+    if ( tests_to_run.empty() ) {
+        // An empty string matches every test
+        tests_to_run.push_back("");
+    }
+
+    num_tests = run_tests(tests_to_run);
+
+    diag_assert(num_tests, "No test cases found.");
     diag().info("Passed {} tests.", num_tests);
 
     return 0;
