@@ -7,7 +7,7 @@
 
 namespace sys {
 
-    typedef suseconds_t useconds_t;
+    typedef long long useconds_t;
 
     static diagnostics::logger diag("system");
 

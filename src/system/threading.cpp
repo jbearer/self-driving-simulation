@@ -113,7 +113,7 @@ unique_ptr<sys::thread> sys::loop(
     return make_unique<loop_thread>(name, main, delay_time);
 }
 
-void sys::timed_exec(string const & name, useconds_t duration, function<void()> func)
+sys::useconds_t sys::timed_exec(string const & name, useconds_t duration, function<void()> func)
 {
     useconds_t time = sys::now();
     func();
@@ -123,4 +123,5 @@ void sys::timed_exec(string const & name, useconds_t duration, function<void()> 
     } else {
         diag.warn("timed_exec: {} exceeded {} us limit ({} us).", name, duration, time);
     }
+    return useconds_since(time);
 }

@@ -38,6 +38,8 @@ namespace sys {
      * @param      name       An identifier used by the logger.
      * @param[in]  duration   The duration in microseconds.
      * @param[in]  func       The function to execute.
+     *
+     * @return                The duration in microseconds that the function actually took.
      */
-    void timed_exec(std::string const & name, useconds_t duration, std::function<void()> func);
+    useconds_t timed_exec(std::string const & name, useconds_t duration, std::function<void()> func);
 }
